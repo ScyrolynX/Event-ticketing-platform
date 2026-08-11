@@ -28,4 +28,9 @@ class Event extends Model
     {
         return $this->belongsTo(User::class, 'organizer_id');
     }
+
+    public function tags()
+    {
+    return $this->belongsToMany(Tag::class);
+    }
 }
