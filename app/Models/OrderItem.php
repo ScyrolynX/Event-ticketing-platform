@@ -26,8 +26,8 @@ class OrderItem extends Model
         return $this->belongsTo(TicketType::class);
     }
 
-    public function ticket()
+    public function tickets()
     {
-        return $this->hasOne(Ticket::class);
+        return $this->hasMany(Ticket::class);
     }
 }
