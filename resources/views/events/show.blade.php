@@ -40,6 +40,8 @@
             </div>
         @endif
 
+        <p id="purchase-message" class="hidden mb-4 text-sm px-4 py-3 rounded-lg"></p>
+
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">Available Tickets</h2>
             <div class="space-y-3">
@@ -49,12 +51,64 @@
                             <div class="font-semibold text-white">{{ $ticketType->name }}</div>
                             <div class="text-xs text-slate-400">{{ $ticketType->quantity_available - $ticketType->quantity_sold }} remaining</div>
                         </div>
-                        <span class="text-lg font-bold text-violet-300">GHS {{ number_format($ticketType->price, 2) }}</span>
+                        <div class="flex items-center gap-4">
+                            <span class="text-lg font-bold text-violet-300">GHS {{ number_format($ticketType->price, 2) }}</span>
+                            <button
+                                class="buy-btn bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-md transition-all duration-300 active:scale-95"
+                                data-ticket-type-id="{{ $ticketType->id }}">
+                                Buy
+                            </button>
+                        </div>
                     </div>
                 @endforeach
             </div>
         </div>
     </main>
-    <script src="http://127.0.0.1:8001/track.js"></script>
+
+    <script>
+        const messageEl = document.getElementById('purchase-message');
+
+        function showMessage(text, isError) {
+            messageEl.textContent = text;
+            messageEl.className = 'mb-4 text-sm px-4 py-3 rounded-lg ' +
+                (isError ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                         : 'bg-green-500/10 text-green-400 border border-green-500/30');
+        }
+
+        document.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                btn.classList.add('shadow-lg', 'shadow-violet-500/60', 'ring-2', 'ring-violet-400');
+                setTimeout(() => btn.classList.remove('shadow-lg', 'shadow-violet-500/60', 'ring-2', 'ring-violet-400'), 600);
+
+                const token = localStorage.getItem('token');
+
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const ticketTypeId = btn.dataset.ticketTypeId;
+
+                const res = await fetch('/api/v1/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ ticket_type_id: ticketTypeId, quantity: 1 }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showMessage(data.message || 'Purchase failed.', true);
+                    return;
+                }
+
+                showMessage('Order placed! Total: GHS ' + data.order.total_amount, false);
+            });
+        });
+    </script>
 </body>
 </html>

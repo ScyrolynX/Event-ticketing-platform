@@ -115,6 +115,5 @@
             <span>Built with Laravel & Tailwind CSS</span>
         </div>
     </footer>
-    <script src="http://127.0.0.1:8001/track.js"></script>
 </body>
 </html>

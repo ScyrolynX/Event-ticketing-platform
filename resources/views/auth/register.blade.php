@@ -49,7 +49,7 @@
                     class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-slate-100 focus:outline-none focus:border-violet-500">
             </div>
             <button type="submit"
-                class="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-2 rounded-md transition">
+                class="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-2 rounded-md transition-all duration-300 active:scale-95 focus:shadow-lg focus:shadow-violet-500/60 focus:ring-2 focus:ring-violet-400">
                 Register
             </button>
         </form>
