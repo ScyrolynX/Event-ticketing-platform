@@ -18,7 +18,7 @@
             </div>
             <nav class="flex gap-6 text-sm text-slate-400">
                 <a href="/events" class="text-violet-400 font-medium">Events</a>
-                <span class="cursor-not-allowed">My Tickets</span>
+                <a href="/my-tickets" class="hover:text-violet-400">My Tickets</a>
                 <span class="cursor-not-allowed">About</span>
             </nav>
         </div>

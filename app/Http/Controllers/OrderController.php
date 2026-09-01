@@ -6,6 +6,7 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use App\Models\TicketType;
 use App\Services\PaystackService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -68,5 +69,20 @@ class OrderController extends Controller
             'order' => $order->load('orderItems'),
             'authorization_url' => $payment['data']['authorization_url'] ?? null,
         ]);
+    }
+
+    /**
+     * The logged-in customer's own order history, with ticket types and
+     * any issued tickets included (spec section 4.3: "My tickets / order history").
+     */
+    public function index(Request $request)
+    {
+        $orders = $request->user()
+            ->orders()
+            ->with('orderItems.ticketType', 'orderItems.tickets')
+            ->latest()
+            ->get();
+
+        return response()->json(['orders' => $orders]);
     }
 }

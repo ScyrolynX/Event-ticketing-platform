@@ -14,6 +14,10 @@ Route::get('/register', function () {
     return view('auth.register');
 });
 
+Route::get('/my-tickets', function () {
+    return view('orders.index');
+});
+
 Route::get('/login', function () {
     return view('auth.login');
 });
