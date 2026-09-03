@@ -7,7 +7,6 @@
 </head>
 <body class="bg-slate-950 min-h-screen text-slate-100">
 
-    <!-- Header -->
     <header class="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
         <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -16,15 +15,14 @@
                 </div>
                 <span class="text-lg font-bold text-white">ScyrolynX</span>
             </div>
-            <nav class="flex gap-6 text-sm text-slate-400">
-                <a href="/events" class="text-violet-400 font-medium">Events</a>
-                <a href="/my-tickets" class="hover:text-violet-400">My Tickets</a>
-                <span class="cursor-not-allowed">About</span>
+            <nav class="flex gap-2 text-sm">
+                <a href="/events" class="nav-pill px-4 py-2 rounded-full bg-violet-600 text-white font-medium transition-all duration-300">Events</a>
+                <a href="/my-tickets" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">My Tickets</a>
+                <a href="#about" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">About</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero -->
     <section class="relative overflow-hidden bg-gradient-to-br from-violet-900 via-slate-900 to-blue-900">
         <div class="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,_#8b5cf6_0%,_transparent_40%),radial-gradient(circle_at_80%_60%,_#3b82f6_0%,_transparent_40%)]"></div>
         <div class="relative max-w-6xl mx-auto px-6 py-20 text-center">
@@ -55,7 +53,6 @@
         </div>
     </section>
 
-    <!-- Events Grid -->
     <main class="max-w-6xl mx-auto px-6 py-16">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-white">Upcoming Events</h2>
@@ -108,12 +105,23 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-slate-800 mt-12">
         <div class="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between text-sm text-slate-500">
             <span>© {{ date('Y') }} ScyrolynX. All rights reserved.</span>
             <span>Built with Laravel & Tailwind CSS</span>
         </div>
     </footer>
+
+    <script>
+        document.querySelectorAll('.nav-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                const href = pill.getAttribute('href');
+                if (href.startsWith('#')) return;
+                e.preventDefault();
+                pill.classList.add('shadow-lg', 'shadow-violet-500/60', 'ring-2', 'ring-violet-400');
+                setTimeout(() => { window.location.href = href; }, 150);
+            });
+        });
+    </script>
 </body>
 </html>

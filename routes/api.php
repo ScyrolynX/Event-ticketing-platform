@@ -20,6 +20,11 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/tickets/{ticket}/qr', [OrderController::class, 'qrCode']);
+    });
+
+    Route::middleware(['auth:sanctum', 'role:Admin|Event Manager|Box Office'])->group(function () {
+        Route::post('/check-in', [OrderController::class, 'checkIn']);
     });
 });
 

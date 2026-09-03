@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
+use App\Models\Ticket;
 use App\Models\TicketType;
 use App\Services\PaystackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class OrderController extends Controller
 {
@@ -16,19 +18,12 @@ class OrderController extends Controller
     {
     }
 
-    /**
-     * Create a pending order for a ticket type + quantity, reserve the stock
-     * atomically, then hand the customer off to Paystack to pay.
-     */
     public function store(StoreOrderRequest $request)
     {
         $validated = $request->validated();
         $user = $request->user();
 
         $order = DB::transaction(function () use ($validated, $user) {
-            // Lock the row so two concurrent purchases can't both succeed
-            // past the remaining stock (spec section 7: enforce quantity
-            // limits atomically).
             $ticketType = TicketType::where('id', $validated['ticket_type_id'])
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -57,8 +52,6 @@ class OrderController extends Controller
             return $order;
         });
 
-        // Only after the order is safely persisted do we talk to Paystack —
-        // if this call fails the order still exists as "pending" and can be retried.
         $payment = $this->paystack->initializeTransaction(
             $user->email,
             $order->total_amount,
@@ -71,10 +64,6 @@ class OrderController extends Controller
         ]);
     }
 
-    /**
-     * The logged-in customer's own order history, with ticket types and
-     * any issued tickets included (spec section 4.3: "My tickets / order history").
-     */
     public function index(Request $request)
     {
         $orders = $request->user()
@@ -84,5 +73,48 @@ class OrderController extends Controller
             ->get();
 
         return response()->json(['orders' => $orders]);
+    }
+
+    public function qrCode(Request $request, Ticket $ticket)
+    {
+        $owner = $ticket->orderItem->order->user_id;
+
+        if ($owner !== $request->user()->id) {
+            abort(403, 'This ticket does not belong to you.');
+        }
+
+        $svg = QrCode::size(200)->generate($ticket->unique_code);
+
+        return response($svg, 200, ['Content-Type' => 'image/svg+xml']);
+    }
+
+    /**
+     * Staff-facing check-in (spec section 4.4): scan a ticket's unique_code,
+     * confirm it's valid and unused, mark it used. Only reachable by staff
+     * with the Admin, Event Manager, or Box Office role, enforced by route
+     * middleware, not by a check in here.
+     */
+    public function checkIn(Request $request)
+    {
+        $validated = $request->validate([
+            'unique_code' => 'required|string',
+        ]);
+
+        $ticket = Ticket::where('unique_code', $validated['unique_code'])->first();
+
+        if (! $ticket) {
+            return response()->json(['message' => 'Ticket not found.'], 404);
+        }
+
+        if ($ticket->status === 'used') {
+            return response()->json(['message' => 'Ticket already used.'], 409);
+        }
+
+        $ticket->update(['status' => 'used']);
+
+        return response()->json([
+            'message' => 'Ticket accepted.',
+            'ticket_id' => $ticket->id,
+        ]);
     }
 }

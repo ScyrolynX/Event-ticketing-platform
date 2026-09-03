@@ -19,6 +19,9 @@
         </div>
     </header>
 
+    <!-- Toast stack: fixed to the top-right, newest notification appears above older ones -->
+    <div id="toast-stack" class="fixed top-20 right-6 z-50 flex flex-col-reverse gap-3 w-80"></div>
+
     <main class="max-w-4xl mx-auto px-6 py-12">
         <div class="h-48 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 rounded-2xl relative flex items-end p-8 mb-8">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)] rounded-2xl"></div>
@@ -39,8 +42,6 @@
                 <p class="text-slate-300 leading-relaxed">{{ $event->description }}</p>
             </div>
         @endif
-
-        <p id="purchase-message" class="hidden mb-4 text-sm px-4 py-3 rounded-lg"></p>
 
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">Available Tickets</h2>
@@ -66,13 +67,31 @@
     </main>
 
     <script>
-        const messageEl = document.getElementById('purchase-message');
+        const toastStack = document.getElementById('toast-stack');
 
-        function showMessage(text, isError) {
-            messageEl.textContent = text;
-            messageEl.className = 'mb-4 text-sm px-4 py-3 rounded-lg ' +
-                (isError ? 'bg-red-500/10 text-red-400 border border-red-500/30'
-                         : 'bg-green-500/10 text-green-400 border border-green-500/30');
+        function showToast(text, isError) {
+            const toast = document.createElement('div');
+            toast.className = 'px-4 py-3 rounded-lg text-sm border shadow-lg transition-all duration-300 opacity-0 -translate-y-2 ' +
+                (isError
+                    ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                    : 'bg-green-500/10 text-green-400 border-green-500/30');
+            toast.textContent = text;
+
+            // New toasts append to the end of the DOM, but the container is
+            // flex-col-reverse, so the newest one visually lands on top of
+            // whatever's already there rather than replacing it.
+            toastStack.appendChild(toast);
+
+            // Trigger the entrance animation on the next frame.
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', '-translate-y-2');
+            });
+
+            // Auto-dismiss after 4 seconds, fading out before removal.
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
         document.querySelectorAll('.buy-btn').forEach(btn => {
@@ -102,11 +121,11 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    showMessage(data.message || 'Purchase failed.', true);
+                    showToast(data.message || 'Purchase failed.', true);
                     return;
                 }
 
-                showMessage('Order placed! Total: GHS ' + data.order.total_amount, false);
+                showToast('Order placed! Total: GHS ' + data.order.total_amount, false);
             });
         });
     </script>

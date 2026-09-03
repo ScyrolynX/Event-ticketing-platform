@@ -15,7 +15,10 @@
                 </div>
                 <span class="text-lg font-bold text-white">ScyrolynX</span>
             </div>
-            <a href="/events" class="text-sm text-violet-400 hover:text-violet-300">← Back to Events</a>
+            <nav class="flex gap-2 text-sm">
+                <a href="/events" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">Events</a>
+                <a href="/my-tickets" class="nav-pill px-4 py-2 rounded-full bg-violet-600 text-white font-medium transition-all duration-300">My Tickets</a>
+            </nav>
         </div>
     </header>
 
@@ -27,9 +30,62 @@
         <div id="orders" class="space-y-4"></div>
     </main>
 
+    <div id="qr-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-violet-500/30 rounded-2xl p-8 max-w-sm w-full text-center">
+            <img id="qr-modal-img" class="w-56 h-56 bg-white rounded-lg p-3 mx-auto mb-4" alt="Ticket QR code">
+            <p id="qr-modal-label" class="text-sm text-slate-400 mb-4"></p>
+            <button id="qr-modal-close" class="px-5 py-2 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-all duration-300 active:scale-95">
+                Close
+            </button>
+        </div>
+    </div>
+
     <script>
+        const token = localStorage.getItem('token');
+        const modal = document.getElementById('qr-modal');
+        const modalImg = document.getElementById('qr-modal-img');
+        const modalLabel = document.getElementById('qr-modal-label');
+
+        document.getElementById('qr-modal-close').addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+
+        document.querySelectorAll('.nav-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                e.preventDefault();
+                pill.classList.add('shadow-lg', 'shadow-violet-500/60', 'ring-2', 'ring-violet-400');
+                setTimeout(() => { window.location.href = pill.getAttribute('href'); }, 150);
+            });
+        });
+
+        async function loadQrCode(ticketId, imgEl) {
+            const res = await fetch(`/api/v1/tickets/${ticketId}/qr`, {
+                headers: { 'Authorization': 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+                imgEl.replaceWith(document.createTextNode('QR code unavailable'));
+                return;
+            }
+
+            const svgText = await res.text();
+            const blob = new Blob([svgText], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            imgEl.src = url;
+            imgEl.dataset.fullSrc = url;
+            imgEl.classList.add('cursor-pointer', 'hover:ring-2', 'hover:ring-violet-400', 'transition-all', 'duration-300');
+
+            imgEl.addEventListener('click', () => {
+                modalImg.src = imgEl.dataset.fullSrc;
+                modalLabel.textContent = `Ticket #${ticketId}, present this at the door`;
+                modal.classList.remove('hidden');
+            });
+        }
+
         (async () => {
-            const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = '/login';
                 return;
@@ -55,21 +111,38 @@
             }
 
             const container = document.getElementById('orders');
+            const qrTargets = [];
 
             data.orders.forEach(order => {
                 const statusColor = order.status === 'paid'
                     ? 'text-green-400 bg-green-500/10 border-green-500/30'
                     : 'text-amber-400 bg-amber-500/10 border-amber-500/30';
 
-                const itemsHtml = order.order_items.map(item => `
-                    <div class="flex justify-between text-sm text-slate-300 py-1">
-                        <span>${item.ticket_type.name} × ${item.quantity}</span>
-                        <span>GHS ${item.unit_price}</span>
-                    </div>
-                    ${item.tickets.length > 0 ? item.tickets.map(t => `
-                        <div class="text-xs text-slate-500 pl-4">Ticket code: ${t.unique_code.substring(0, 24)}...</div>
-                    `).join('') : '<div class="text-xs text-slate-500 pl-4">Ticket not yet issued (awaiting payment confirmation)</div>'}
-                `).join('');
+                let itemsHtml = '';
+
+                order.order_items.forEach(item => {
+                    itemsHtml += `
+                        <div class="flex justify-between text-sm text-slate-300 py-1">
+                            <span>${item.ticket_type.name} × ${item.quantity}</span>
+                            <span>GHS ${item.unit_price}</span>
+                        </div>
+                    `;
+
+                    if (item.tickets.length > 0) {
+                        item.tickets.forEach(t => {
+                            const imgId = `qr-${t.id}`;
+                            itemsHtml += `
+                                <div class="flex items-center gap-3 pl-4 py-2">
+                                    <img id="${imgId}" class="w-16 h-16 bg-white rounded-lg p-1" alt="Ticket QR code">
+                                    <span class="text-xs text-slate-500">Ticket #${t.id}, click to enlarge</span>
+                                </div>
+                            `;
+                            qrTargets.push(t.id);
+                        });
+                    } else {
+                        itemsHtml += `<div class="text-xs text-slate-500 pl-4">Ticket not yet issued (awaiting payment confirmation)</div>`;
+                    }
+                });
 
                 const card = document.createElement('div');
                 card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5';
@@ -85,6 +158,11 @@
                     <div class="text-right font-bold text-violet-300 mt-3">GHS ${order.total_amount}</div>
                 `;
                 container.appendChild(card);
+            });
+
+            qrTargets.forEach(ticketId => {
+                const imgEl = document.getElementById(`qr-${ticketId}`);
+                loadQrCode(ticketId, imgEl);
             });
         })();
     </script>
