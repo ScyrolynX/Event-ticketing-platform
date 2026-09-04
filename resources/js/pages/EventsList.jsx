@@ -59,7 +59,7 @@ export default function EventsList() {
                                 <div className="text-sm text-slate-400 mb-4">📍 {event.venue}</div>
 
                                 <Link
-                                    to={`/react/events/${event.id}`}
+                                    to={`/events/${event.id}`}
                                     className="block text-center bg-gradient-to-r from-violet-600 to-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg"
                                 >
                                     View Details
