@@ -77,17 +77,12 @@
                     : 'bg-green-500/10 text-green-400 border-green-500/30');
             toast.textContent = text;
 
-            // New toasts append to the end of the DOM, but the container is
-            // flex-col-reverse, so the newest one visually lands on top of
-            // whatever's already there rather than replacing it.
             toastStack.appendChild(toast);
 
-            // Trigger the entrance animation on the next frame.
             requestAnimationFrame(() => {
                 toast.classList.remove('opacity-0', '-translate-y-2');
             });
 
-            // Auto-dismiss after 4 seconds, fading out before removal.
             setTimeout(() => {
                 toast.classList.add('opacity-0');
                 setTimeout(() => toast.remove(), 300);
@@ -117,6 +112,12 @@
                     },
                     body: JSON.stringify({ ticket_type_id: ticketTypeId, quantity: 1 }),
                 });
+
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
 
                 const data = await res.json();
 

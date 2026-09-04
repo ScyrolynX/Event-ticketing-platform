@@ -73,7 +73,9 @@
             }
 
             localStorage.setItem('token', data.token);
-            window.location.href = '/events';
+
+            const roles = data.user.roles ? data.user.roles.map(r => r.name) : [];
+            window.location.href = roles.length > 0 ? '/staff' : '/events';
         });
     </script>
 </body>

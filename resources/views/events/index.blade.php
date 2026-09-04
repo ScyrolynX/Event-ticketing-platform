@@ -15,11 +15,19 @@
                 </div>
                 <span class="text-lg font-bold text-white">ScyrolynX</span>
             </div>
-            <nav class="flex gap-2 text-sm">
-                <a href="/events" class="nav-pill px-4 py-2 rounded-full bg-violet-600 text-white font-medium transition-all duration-300">Events</a>
-                <a href="/my-tickets" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">My Tickets</a>
-                <a href="#about" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">About</a>
-            </nav>
+
+            <div class="flex items-center gap-4">
+                <nav class="flex gap-2 text-sm">
+                    <a href="/events" class="nav-pill px-4 py-2 rounded-full bg-violet-600 text-white font-medium transition-all duration-300">Events</a>
+                    <a href="/my-tickets" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">My Tickets</a>
+                    <a href="#about" class="nav-pill px-4 py-2 rounded-full bg-slate-800 text-slate-200 font-medium hover:bg-slate-700 transition-all duration-300">About</a>
+                </nav>
+
+                <div class="w-px h-6 bg-slate-800"></div>
+
+                <button id="logout-btn" class="hidden px-4 py-2 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 text-sm font-medium transition-all duration-300">Logout</button>
+                <a id="login-link" href="/login" class="px-4 py-2 rounded-full bg-slate-800 text-slate-200 text-sm font-medium hover:bg-slate-700 transition-all duration-300">Login</a>
+            </div>
         </div>
     </header>
 
@@ -113,6 +121,20 @@
     </footer>
 
     <script>
+        const loginLink = document.getElementById('login-link');
+        const logoutBtn = document.getElementById('logout-btn');
+        const token = localStorage.getItem('token');
+
+        if (token) {
+            loginLink.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+        }
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/events';
+        });
+
         document.querySelectorAll('.nav-pill').forEach(pill => {
             pill.addEventListener('click', (e) => {
                 const href = pill.getAttribute('href');

@@ -61,6 +61,14 @@
             });
         });
 
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-code-btn')) {
+                navigator.clipboard.writeText(e.target.dataset.code);
+                e.target.textContent = 'Copied!';
+                setTimeout(() => { e.target.textContent = 'Copy code'; }, 1500);
+            }
+        });
+
         async function loadQrCode(ticketId, imgEl) {
             const res = await fetch(`/api/v1/tickets/${ticketId}/qr`, {
                 headers: { 'Authorization': 'Bearer ' + token },
@@ -134,7 +142,8 @@
                             itemsHtml += `
                                 <div class="flex items-center gap-3 pl-4 py-2">
                                     <img id="${imgId}" class="w-16 h-16 bg-white rounded-lg p-1" alt="Ticket QR code">
-                                    <span class="text-xs text-slate-500">Ticket #${t.id}, click to enlarge</span>
+                                    <span class="text-xs text-slate-500">Ticket #${t.id}</span>
+                                    <button class="copy-code-btn ml-auto text-xs px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300" data-code="${t.unique_code}">Copy code</button>
                                 </div>
                             `;
                             qrTargets.push(t.id);
