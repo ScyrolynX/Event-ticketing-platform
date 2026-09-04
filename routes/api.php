@@ -10,8 +10,8 @@ use App\Http\Controllers\PaystackWebhookController;
 Route::post('/webhook/paystack', [PaystackWebhookController::class, 'handle']);
 
 Route::prefix('v1')->group(function () {
-    Route::get('/events', [EventController::class, 'index']);
-    Route::get('/events/{event}', [EventController::class, 'show']);
+    Route::get('/events', [EventController::class, 'apiIndex']);
+    Route::get('/events/{event}', [EventController::class, 'apiShow']);
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
