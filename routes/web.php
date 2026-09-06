@@ -26,6 +26,10 @@ Route::get('/check-in', function () {
     return view('checkin.index');
 });
 
+Route::get('/manage/events', function () {
+    return view('staff.events');
+});
+
 Route::get('/staff', function () {
     return view('staff.dashboard');
 });

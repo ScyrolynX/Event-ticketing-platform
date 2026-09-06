@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaystackWebhookController;
@@ -25,6 +26,12 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware(['auth:sanctum', 'role:Admin|Event Manager|Box Office'])->group(function () {
         Route::post('/check-in', [OrderController::class, 'checkIn']);
+    });
+
+    Route::middleware(['auth:sanctum', 'role:Admin|Event Manager'])->group(function () {
+        Route::get('/manage/events', [EventManagementController::class, 'index']);
+        Route::post('/manage/events', [EventManagementController::class, 'store']);
+        Route::post('/manage/events/{event}/ticket-types', [EventManagementController::class, 'storeTicketType']);
     });
 });
 

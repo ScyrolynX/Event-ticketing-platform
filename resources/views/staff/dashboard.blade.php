@@ -55,6 +55,10 @@
                 cards.push({ href: '/check-in', title: 'Ticket Check-In', desc: 'Scan or enter a ticket code to admit a guest.' });
             }
 
+            if (roles.includes('Admin') || roles.includes('Event Manager')) {
+                cards.push({ href: '/manage/events', title: 'Manage Events', desc: 'Create events and ticket types.' });
+            }
+
             cards.forEach(c => {
                 const el = document.createElement('a');
                 el.href = c.href;
