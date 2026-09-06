@@ -58,6 +58,9 @@
             if (roles.includes('Admin') || roles.includes('Event Manager')) {
                 cards.push({ href: '/manage/events', title: 'Manage Events', desc: 'Create events and ticket types.' });
             }
+            if (roles.includes('Admin')) {
+                cards.push({ href: '/manage/staff', title: 'Manage Staff', desc: 'Create staff accounts and assign roles.' });
+            }
 
             cards.forEach(c => {
                 const el = document.createElement('a');

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventManagementController;
+use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaystackWebhookController;
@@ -32,6 +33,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/manage/events', [EventManagementController::class, 'index']);
         Route::post('/manage/events', [EventManagementController::class, 'store']);
         Route::post('/manage/events/{event}/ticket-types', [EventManagementController::class, 'storeTicketType']);
+    });
+
+    Route::middleware(['auth:sanctum', 'role:Admin'])->group(function () {
+        Route::get('/manage/staff', [StaffManagementController::class, 'index']);
+        Route::post('/manage/staff', [StaffManagementController::class, 'store']);
+        Route::patch('/manage/staff/{user}', [StaffManagementController::class, 'updateRole']);
     });
 });
 
