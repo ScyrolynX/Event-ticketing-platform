@@ -61,11 +61,34 @@
             });
         });
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
             if (e.target.classList.contains('copy-code-btn')) {
                 navigator.clipboard.writeText(e.target.dataset.code);
                 e.target.textContent = 'Copied!';
                 setTimeout(() => { e.target.textContent = 'Copy code'; }, 1500);
+                return;
+            }
+
+            if (e.target.classList.contains('refund-btn')) {
+                const orderId = e.target.dataset.orderId;
+                e.target.disabled = true;
+                e.target.textContent = 'Requesting...';
+
+                const res = await fetch(`/api/v1/orders/${orderId}/refund`, {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({}),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    e.target.disabled = false;
+                    e.target.textContent = data.message || 'Request Refund';
+                    return;
+                }
+
+                e.target.textContent = 'Refund requested';
             }
         });
 
@@ -122,9 +145,12 @@
             const qrTargets = [];
 
             data.orders.forEach(order => {
-                const statusColor = order.status === 'paid'
-                    ? 'text-green-400 bg-green-500/10 border-green-500/30'
-                    : 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+                const statusColors = {
+                    paid: 'text-green-400 bg-green-500/10 border-green-500/30',
+                    pending: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+                    refunded: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+                };
+                const statusColor = statusColors[order.status] || statusColors.pending;
 
                 let itemsHtml = '';
 
@@ -136,7 +162,7 @@
                         </div>
                     `;
 
-                    if (item.tickets.length > 0) {
+                    if (item.tickets.length > 0 && order.status !== 'refunded') {
                         item.tickets.forEach(t => {
                             const imgId = `qr-${t.id}`;
                             itemsHtml += `
@@ -148,10 +174,14 @@
                             `;
                             qrTargets.push(t.id);
                         });
-                    } else {
+                    } else if (order.status === 'pending') {
                         itemsHtml += `<div class="text-xs text-slate-500 pl-4">Ticket not yet issued (awaiting payment confirmation)</div>`;
                     }
                 });
+
+                const refundButton = order.status === 'paid'
+                    ? `<button class="refund-btn text-xs px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20" data-order-id="${order.id}">Request Refund</button>`
+                    : '';
 
                 const card = document.createElement('div');
                 card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5';
@@ -164,7 +194,10 @@
                         <span class="text-xs px-2 py-1 rounded-full border ${statusColor}">${order.status}</span>
                     </div>
                     ${itemsHtml}
-                    <div class="text-right font-bold text-violet-300 mt-3">GHS ${order.total_amount}</div>
+                    <div class="flex justify-between items-center mt-3">
+                        <div>${refundButton}</div>
+                        <div class="font-bold text-violet-300">GHS ${order.total_amount}</div>
+                    </div>
                 `;
                 container.appendChild(card);
             });

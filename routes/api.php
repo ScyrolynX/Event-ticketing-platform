@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventManagementController;
 use App\Http\Controllers\StaffManagementController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaystackWebhookController;
@@ -23,6 +24,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/tickets/{ticket}/qr', [OrderController::class, 'qrCode']);
+        Route::post('/orders/{order}/refund', [RefundController::class, 'store']);
     });
 
     Route::middleware(['auth:sanctum', 'role:Admin|Event Manager|Box Office'])->group(function () {
@@ -39,6 +41,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/manage/staff', [StaffManagementController::class, 'index']);
         Route::post('/manage/staff', [StaffManagementController::class, 'store']);
         Route::patch('/manage/staff/{user}', [StaffManagementController::class, 'updateRole']);
+
+        Route::get('/manage/refunds', [RefundController::class, 'index']);
+        Route::post('/manage/refunds/{refundRequest}/approve', [RefundController::class, 'approve']);
+        Route::post('/manage/refunds/{refundRequest}/reject', [RefundController::class, 'reject']);
     });
 });
 
