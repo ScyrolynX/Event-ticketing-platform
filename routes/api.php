@@ -7,6 +7,7 @@ use App\Http\Controllers\EventManagementController;
 use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\DiscountCodeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaystackWebhookController;
@@ -48,6 +49,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/manage/refunds', [RefundController::class, 'index']);
         Route::post('/manage/refunds/{refundRequest}/approve', [RefundController::class, 'approve']);
         Route::post('/manage/refunds/{refundRequest}/reject', [RefundController::class, 'reject']);
+
+        Route::get('/manage/dashboard', [DashboardController::class, 'index']);
     });
 });
 

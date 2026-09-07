@@ -68,6 +68,10 @@
             }
 
             if (roles.includes('Admin')) {
+                cards.push({ href: '/manage/dashboard', title: 'Sales Dashboard', desc: 'Revenue and tickets sold, per event.' });
+            }
+
+            if (roles.includes('Admin')) {
                 cards.push({ href: '/manage/refunds', title: 'Refund Requests', desc: 'Approve or reject customer refund requests.' });
             }
 
