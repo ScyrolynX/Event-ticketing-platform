@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import EventsList from './pages/EventsList.jsx';
 import EventDetail from './pages/EventDetail.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 
 export default function App() {
     return (
@@ -9,6 +11,8 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<EventsList />} />
                 <Route path="/events/:id" element={<EventDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
             </Routes>
         </BrowserRouter>
     );
