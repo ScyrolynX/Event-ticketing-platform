@@ -31,6 +31,9 @@
                     <option value="sports">Sports</option>
                     <option value="other">Other</option>
                 </select>
+                <select name="promoter_id" id="promoter-select" class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                    <option value="">No promoter (in-house event)</option>
+                </select>
                 <textarea name="description" placeholder="Description (optional)" class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"></textarea>
                 <input name="venue" placeholder="Venue" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
                 <input name="event_date" type="datetime-local" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
@@ -47,6 +50,21 @@
 
         const errorEl = document.getElementById('error');
         const successEl = document.getElementById('success');
+
+        async function loadPromotersIntoSelect() {
+            const res = await fetch('/api/v1/manage/promoters', {
+                headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const select = document.getElementById('promoter-select');
+            data.promoters.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name + ' (' + p.commission_rate + '% commission)';
+                select.appendChild(opt);
+            });
+        }
 
         async function loadEvents() {
             const res = await fetch('/api/v1/manage/events', {
@@ -110,6 +128,7 @@
             successEl.classList.add('hidden');
 
             const payload = Object.fromEntries(new FormData(e.target).entries());
+            if (!payload.promoter_id) delete payload.promoter_id;
 
             const res = await fetch('/api/v1/manage/events', {
                 method: 'POST',
@@ -131,6 +150,7 @@
             loadEvents();
         });
 
+        loadPromotersIntoSelect();
         loadEvents();
     </script>
 </body>

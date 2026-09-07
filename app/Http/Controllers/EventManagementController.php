@@ -13,6 +13,7 @@ class EventManagementController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|in:concert,conference,sports,other',
+            'promoter_id' => 'nullable|exists:promoters,id',
             'description' => 'nullable|string',
             'venue' => 'required|string|max:255',
             'event_date' => 'required|date',
@@ -20,6 +21,7 @@ class EventManagementController extends Controller
 
         $event = Event::create([
             'organizer_id' => $request->user()->id,
+            'promoter_id' => $validated['promoter_id'] ?? null,
             'title' => $validated['title'],
             'category' => $validated['category'],
             'description' => $validated['description'] ?? null,
