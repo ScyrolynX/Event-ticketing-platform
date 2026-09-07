@@ -75,6 +75,11 @@
                 cards.push({ href: '/manage/refunds', title: 'Refund Requests', desc: 'Approve or reject customer refund requests.' });
             }
 
+            if (roles.includes('Admin')) {
+                cards.push({ href: '/manage/promoters', title: 'Promoters', desc: 'Manage promoters and commission rates.' });
+                cards.push({ href: '/manage/settlement-report', title: 'Settlement Report', desc: 'Amount owed per promoter after commission.' });
+        }
+
             cards.forEach(c => {
                 const el = document.createElement('a');
                 el.href = c.href;

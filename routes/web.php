@@ -34,6 +34,14 @@ Route::get('/manage/dashboard', function () {
     return view('staff.dashboard-report');
 });
 
+Route::get('/manage/promoters', function () {
+    return view('staff.manage-promoters');
+});
+
+Route::get('/manage/settlement-report', function () {
+    return view('staff.settlement-report');
+});
+
 Route::get('/manage/discounts', function () {
     return view('staff.manage-discounts');
 });

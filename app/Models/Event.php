@@ -11,6 +11,7 @@ class Event extends Model
 
     protected $fillable = [
         'organizer_id',
+        'promoter_id',
         'title',
         'category',
         'description',
@@ -30,6 +31,11 @@ class Event extends Model
     public function organizer()
     {
         return $this->belongsTo(User::class, 'organizer_id');
+    }
+
+    public function promoter()
+    {
+        return $this->belongsTo(Promoter::class);
     }
 
     public function tags()
