@@ -30,6 +30,10 @@ Route::get('/manage/events', function () {
     return view('staff.events');
 });
 
+Route::get('/manage/discounts', function () {
+    return view('staff.manage-discounts');
+});
+
 Route::get('/manage/refunds', function () {
     return view('staff.manage-refunds');
 });

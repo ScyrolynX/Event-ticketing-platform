@@ -6,6 +6,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventManagementController;
 use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\RefundController;
+use App\Http\Controllers\DiscountCodeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaystackWebhookController;
@@ -35,6 +36,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/manage/events', [EventManagementController::class, 'index']);
         Route::post('/manage/events', [EventManagementController::class, 'store']);
         Route::post('/manage/events/{event}/ticket-types', [EventManagementController::class, 'storeTicketType']);
+        Route::get('/manage/discount-codes', [DiscountCodeController::class, 'index']);
+        Route::post('/manage/discount-codes', [DiscountCodeController::class, 'store']);
     });
 
     Route::middleware(['auth:sanctum', 'role:Admin'])->group(function () {

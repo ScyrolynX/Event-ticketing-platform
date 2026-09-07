@@ -19,7 +19,6 @@
         </div>
     </header>
 
-    <!-- Toast stack: fixed to the top-right, newest notification appears above older ones -->
     <div id="toast-stack" class="fixed top-20 right-6 z-50 flex flex-col-reverse gap-3 w-80"></div>
 
     <main class="max-w-4xl mx-auto px-6 py-12">
@@ -42,6 +41,12 @@
                 <p class="text-slate-300 leading-relaxed">{{ $event->description }}</p>
             </div>
         @endif
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Discount Code (optional)</label>
+            <input id="discount-input" type="text" placeholder="e.g. SAVE10"
+                class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm uppercase focus:outline-none focus:border-violet-500">
+        </div>
 
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">Available Tickets</h2>
@@ -102,6 +107,10 @@
                 }
 
                 const ticketTypeId = btn.dataset.ticketTypeId;
+                const discountCode = document.getElementById('discount-input').value.trim();
+
+                const payload = { ticket_type_id: ticketTypeId, quantity: 1 };
+                if (discountCode) payload.discount_code = discountCode;
 
                 const res = await fetch('/api/v1/orders', {
                     method: 'POST',
@@ -110,7 +119,7 @@
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ ticket_type_id: ticketTypeId, quantity: 1 }),
+                    body: JSON.stringify(payload),
                 });
 
                 if (res.status === 401) {

@@ -16,6 +16,7 @@ class StoreOrderRequest extends FormRequest
         return [
             'ticket_type_id' => ['required', 'exists:ticket_types,id'],
             'quantity' => ['required', 'integer', 'min:1'],
+            'discount_code' => ['nullable', 'string'],
         ];
     }
 }

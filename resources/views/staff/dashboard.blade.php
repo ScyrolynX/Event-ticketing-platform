@@ -63,6 +63,10 @@
                 cards.push({ href: '/manage/staff', title: 'Manage Staff', desc: 'Create staff accounts and assign roles.' });
             }
 
+            if (roles.includes('Admin') || roles.includes('Event Manager')) {
+                cards.push({ href: '/manage/discounts', title: 'Discount Codes', desc: 'Create sitewide or event-specific discount codes.' });
+            }
+
             if (roles.includes('Admin')) {
                 cards.push({ href: '/manage/refunds', title: 'Refund Requests', desc: 'Approve or reject customer refund requests.' });
             }

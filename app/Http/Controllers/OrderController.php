@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\DiscountCode;
 use App\Models\Order;
 use App\Models\Ticket;
 use App\Models\TicketType;
@@ -22,8 +23,17 @@ class OrderController extends Controller
     {
         $validated = $request->validated();
         $user = $request->user();
+        $discountCode = null;
 
-        $order = DB::transaction(function () use ($validated, $user) {
+        if (!empty($validated['discount_code'])) {
+            $discountCode = DiscountCode::where('code', $validated['discount_code'])->first();
+
+            if (!$discountCode) {
+                abort(422, 'Invalid discount code.');
+            }
+        }
+
+        $order = DB::transaction(function () use ($validated, $user, $discountCode) {
             $ticketType = TicketType::where('id', $validated['ticket_type_id'])
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -34,11 +44,17 @@ class OrderController extends Controller
                 abort(422, 'Not enough tickets remaining for this ticket type.');
             }
 
+            if ($discountCode && !$discountCode->isValidFor($ticketType->event_id)) {
+                abort(422, 'This discount code is not valid for this event or has expired.');
+            }
+
+            $unitPrice = $discountCode ? $discountCode->apply($ticketType->price) : $ticketType->price;
+
             $ticketType->increment('quantity_sold', $validated['quantity']);
 
             $order = Order::create([
                 'user_id' => $user->id,
-                'total_amount' => $ticketType->price * $validated['quantity'],
+                'total_amount' => $unitPrice * $validated['quantity'],
                 'status' => 'pending',
                 'paystack_reference' => (string) Str::uuid(),
             ]);
@@ -46,7 +62,7 @@ class OrderController extends Controller
             $order->orderItems()->create([
                 'ticket_type_id' => $ticketType->id,
                 'quantity' => $validated['quantity'],
-                'unit_price' => $ticketType->price,
+                'unit_price' => $unitPrice,
             ]);
 
             return $order;
@@ -88,12 +104,6 @@ class OrderController extends Controller
         return response($svg, 200, ['Content-Type' => 'image/svg+xml']);
     }
 
-    /**
-     * Staff-facing check-in (spec section 4.4): scan a ticket's unique_code,
-     * confirm it's valid and unused, mark it used. Only reachable by staff
-     * with the Admin, Event Manager, or Box Office role, enforced by route
-     * middleware, not by a check in here.
-     */
     public function checkIn(Request $request)
     {
         $validated = $request->validate([
