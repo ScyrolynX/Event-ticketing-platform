@@ -8,14 +8,11 @@ use Illuminate\Http\Request;
 
 class EventManagementController extends Controller
 {
-    /**
-     * Create a new event (spec 4.1). Only Admin/Event Manager can reach
-     * this route, enforced by role middleware, not code here.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'category' => 'required|in:concert,conference,sports,other',
             'description' => 'nullable|string',
             'venue' => 'required|string|max:255',
             'event_date' => 'required|date',
@@ -24,6 +21,7 @@ class EventManagementController extends Controller
         $event = Event::create([
             'organizer_id' => $request->user()->id,
             'title' => $validated['title'],
+            'category' => $validated['category'],
             'description' => $validated['description'] ?? null,
             'venue' => $validated['venue'],
             'event_date' => $validated['event_date'],
@@ -32,9 +30,6 @@ class EventManagementController extends Controller
         return response()->json(['event' => $event], 201);
     }
 
-    /**
-     * Add a ticket type to an event.
-     */
     public function storeTicketType(Request $request, Event $event)
     {
         $validated = $request->validate([
@@ -53,9 +48,6 @@ class EventManagementController extends Controller
         return response()->json(['ticket_type' => $ticketType], 201);
     }
 
-    /**
-     * List all events for the backoffice management screen.
-     */
     public function index()
     {
         $events = Event::with('ticketTypes')->latest()->get();

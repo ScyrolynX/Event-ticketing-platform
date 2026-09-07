@@ -43,74 +43,30 @@
             <p class="text-slate-300 text-lg max-w-xl mx-auto">
                 Book tickets to the hottest concerts, meetups, and experiences — all in one place.
             </p>
-
-            <div class="flex justify-center gap-10 mt-10">
-                <div>
-                    <div class="text-3xl font-bold text-white">{{ $events->count() }}</div>
-                    <div class="text-sm text-slate-400">Live Events</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-white">{{ $events->sum(fn($e) => $e->ticketTypes->count()) }}</div>
-                    <div class="text-sm text-slate-400">Ticket Types</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-white">100%</div>
-                    <div class="text-sm text-slate-400">Secure Checkout</div>
-                </div>
-            </div>
         </div>
     </section>
 
     <main class="max-w-6xl mx-auto px-6 py-16">
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-white">Upcoming Events</h2>
-            <span class="text-sm text-slate-400">{{ $events->count() }} events found</span>
+            <span id="event-count" class="text-sm text-slate-400">Loading...</span>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach ($events as $event)
-                <div class="group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-violet-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
-
-                    <div class="h-32 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 relative flex items-end p-4">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]"></div>
-                        <span class="relative bg-black/30 backdrop-blur text-white text-xs font-semibold px-3 py-1 rounded-full">
-                            {{ $event->event_date->format('M j, Y') }}
-                        </span>
-                    </div>
-
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-white mb-1 group-hover:text-violet-300 transition-colors">
-                            {{ $event->title }}
-                        </h3>
-
-                        <div class="flex items-center gap-1.5 text-sm text-slate-400 mb-4">
-                            <span>📍 {{ $event->venue }}</span>
-                            <span class="text-slate-600">·</span>
-                            <span>🕐 {{ $event->event_date->format('g:i A') }}</span>
-                        </div>
-
-                        @if($event->description)
-                            <p class="text-slate-400 text-sm mb-5 leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ $event->description }}</p>
-                        @endif
-
-                        <div class="border-t border-slate-800 pt-4 mb-5">
-                            <div class="space-y-2">
-                                @foreach ($event->ticketTypes as $ticketType)
-                                    <div class="flex justify-between items-center bg-slate-800/50 rounded-lg px-4 py-2.5">
-                                        <span class="text-sm font-medium text-slate-300">{{ $ticketType->name }}</span>
-                                        <span class="text-sm font-bold text-violet-300">GHS {{ number_format($ticketType->price, 2) }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <a href="/events/{{ $event->id }}" class="block text-center bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-semibold py-2.5 rounded-lg transition-all duration-200 shadow-lg shadow-violet-900/50">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            @endforeach
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <select id="filter-category" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                <option value="">All categories</option>
+                <option value="concert">Concert</option>
+                <option value="conference">Conference</option>
+                <option value="sports">Sports</option>
+                <option value="other">Other</option>
+            </select>
+            <input id="filter-date-from" type="date" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+            <input id="filter-date-to" type="date" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+            <input id="filter-max-price" type="number" placeholder="Max price (GHS)" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
         </div>
+
+        <div id="events-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
+        <p id="no-events" class="hidden text-slate-400 text-center py-12">No events match these filters.</p>
     </main>
 
     <footer class="border-t border-slate-800 mt-12">
@@ -144,6 +100,76 @@
                 setTimeout(() => { window.location.href = href; }, 150);
             });
         });
+
+        function renderEvents(events) {
+            const grid = document.getElementById('events-grid');
+            const noEvents = document.getElementById('no-events');
+            grid.innerHTML = '';
+
+            document.getElementById('event-count').textContent = events.length + ' events found';
+
+            if (events.length === 0) {
+                noEvents.classList.remove('hidden');
+                return;
+            }
+            noEvents.classList.add('hidden');
+
+            events.forEach(event => {
+                const ticketRows = event.ticket_types.map(tt => `
+                    <div class="flex justify-between items-center bg-slate-800/50 rounded-lg px-4 py-2.5">
+                        <span class="text-sm font-medium text-slate-300">${tt.name}</span>
+                        <span class="text-sm font-bold text-violet-300">GHS ${Number(tt.price).toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                const card = document.createElement('div');
+                card.className = 'group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-violet-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10';
+                card.innerHTML = `
+                    <div class="h-32 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 relative flex items-end p-4">
+                        <span class="relative bg-black/30 backdrop-blur text-white text-xs font-semibold px-3 py-1 rounded-full">
+                            ${new Date(event.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-xs uppercase tracking-wide text-violet-400 mb-1">${event.category}</div>
+                        <h3 class="text-xl font-bold text-white mb-1 group-hover:text-violet-300 transition-colors">${event.title}</h3>
+                        <div class="flex items-center gap-1.5 text-sm text-slate-400 mb-4">
+                            <span>📍 ${event.venue}</span>
+                        </div>
+                        <div class="border-t border-slate-800 pt-4 mb-5">
+                            <div class="space-y-2">${ticketRows}</div>
+                        </div>
+                        <a href="/events/${event.id}" class="block text-center bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-semibold py-2.5 rounded-lg transition-all duration-200 shadow-lg shadow-violet-900/50">
+                            View Details
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadEvents() {
+            const params = new URLSearchParams();
+            const category = document.getElementById('filter-category').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            const maxPrice = document.getElementById('filter-max-price').value;
+
+            if (category) params.set('category', category);
+            if (dateFrom) params.set('date_from', dateFrom);
+            if (dateTo) params.set('date_to', dateTo);
+            if (maxPrice) params.set('max_price', maxPrice);
+
+            const res = await fetch('/api/v1/events?' + params.toString());
+            const data = await res.json();
+            renderEvents(data.events);
+        }
+
+        ['filter-category', 'filter-date-from', 'filter-date-to', 'filter-max-price'].forEach(id => {
+            document.getElementById(id).addEventListener('change', loadEvents);
+        });
+
+        loadEvents();
     </script>
 </body>
 </html>

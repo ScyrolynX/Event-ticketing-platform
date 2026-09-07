@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
@@ -20,14 +21,30 @@ class EventController extends Controller
         return view('events.show', ['event' => $event]);
     }
 
-    /**
-     * JSON version for the API (used by React and any other API consumer).
-     * The Blade-rendering index()/show() above stay untouched for the
-     * existing working site.
-     */
-    public function apiIndex()
+    public function apiIndex(Request $request)
     {
-        $events = Event::with('ticketTypes')->get();
+        $query = Event::with('ticketTypes');
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('event_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('event_date', '<=', $request->date_to);
+        }
+
+        $events = $query->get();
+
+        if ($request->filled('max_price')) {
+            $maxPrice = (float) $request->max_price;
+            $events = $events->filter(function ($event) use ($maxPrice) {
+                return $event->ticketTypes->min('price') <= $maxPrice;
+            })->values();
+        }
 
         return response()->json(['events' => $events]);
     }

@@ -24,6 +24,13 @@
             <h2 class="font-semibold text-white mb-4">Create Event</h2>
             <form id="event-form" class="space-y-3">
                 <input name="title" placeholder="Event title" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                <select name="category" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                    <option value="">Select category...</option>
+                    <option value="concert">Concert</option>
+                    <option value="conference">Conference</option>
+                    <option value="sports">Sports</option>
+                    <option value="other">Other</option>
+                </select>
                 <textarea name="description" placeholder="Description (optional)" class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"></textarea>
                 <input name="venue" placeholder="Venue" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">
                 <input name="event_date" type="datetime-local" required class="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm">

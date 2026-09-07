@@ -12,13 +12,16 @@ class Event extends Model
     protected $fillable = [
         'organizer_id',
         'title',
+        'category',
         'description',
         'venue',
         'event_date',
     ];
+
     protected $casts = [
         'event_date' => 'datetime',
     ];
+
     public function ticketTypes()
     {
         return $this->hasMany(TicketType::class);
@@ -31,6 +34,6 @@ class Event extends Model
 
     public function tags()
     {
-    return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Tag::class);
     }
 }
