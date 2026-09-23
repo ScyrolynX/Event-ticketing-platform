@@ -17,7 +17,12 @@ class EventManagementController extends Controller
             'description' => 'nullable|string',
             'venue' => 'required|string|max:255',
             'event_date' => 'required|date',
+            'image' => 'nullable|image|max:5120',
         ]);
+
+        $imagePath = $request->hasFile('image')
+            ? $request->file('image')->store('events', 'public')
+            : null;
 
         $event = Event::create([
             'organizer_id' => $request->user()->id,
@@ -27,6 +32,7 @@ class EventManagementController extends Controller
             'description' => $validated['description'] ?? null,
             'venue' => $validated['venue'],
             'event_date' => $validated['event_date'],
+            'image_path' => $imagePath,
         ]);
 
         return response()->json(['event' => $event], 201);

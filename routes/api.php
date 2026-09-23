@@ -26,6 +26,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{order}', [OrderController::class, 'show']);
+        Route::post('/orders/{order}/complete-demo-payment', [OrderController::class, 'completeDemoPayment']);
         Route::get('/tickets/{ticket}/qr', [OrderController::class, 'qrCode']);
         Route::post('/orders/{order}/refund', [RefundController::class, 'store']);
     });

@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar.jsx';
 
 export default function MyTickets() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [qrModal, setQrModal] = useState(null);
+    const [copiedId, setCopiedId] = useState(null);
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
@@ -38,16 +41,27 @@ export default function MyTickets() {
         }
     }
 
+    async function openQr(ticketId) {
+        const res = await fetch(`/api/v1/tickets/${ticketId}/qr`, {
+            headers: { Authorization: 'Bearer ' + token },
+        });
+        if (!res.ok) return;
+        const svgText = await res.text();
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+        setQrModal({ url: URL.createObjectURL(blob), ticketId });
+    }
+
+    function copyCode(ticketId, code) {
+        navigator.clipboard.writeText(code);
+        setCopiedId(ticketId);
+        setTimeout(() => setCopiedId(null), 1500);
+    }
+
     if (loading) return <div className="max-w-3xl mx-auto px-6 py-16 text-slate-400">Loading your orders...</div>;
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
-                    <span className="text-lg font-bold text-white">ScyrolynX</span>
-                    <Link to="/" className="text-sm text-violet-400">← Events</Link>
-                </div>
-            </header>
+            <Navbar />
 
             <main className="max-w-3xl mx-auto px-6 py-12">
                 <h1 className="text-2xl font-bold mb-8">My Tickets</h1>
@@ -77,9 +91,33 @@ export default function MyTickets() {
                                 </div>
 
                                 {order.order_items.map((item) => (
-                                    <div key={item.id} className="flex justify-between text-sm text-slate-300 py-1">
-                                        <span>{item.ticket_type.name} × {item.quantity}</span>
-                                        <span>GHS {item.unit_price}</span>
+                                    <div key={item.id}>
+                                        <div className="flex justify-between text-sm text-slate-300 py-1">
+                                            <span>{item.ticket_type.name} × {item.quantity}</span>
+                                            <span>GHS {item.unit_price}</span>
+                                        </div>
+
+                                        {item.tickets.length > 0 ? (
+                                            item.tickets.map((t) => (
+                                                <div key={t.id} className="flex items-center gap-3 pl-4 py-2">
+                                                    <img
+                                                        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E"
+                                                        onClick={() => openQr(t.id)}
+                                                        className="w-10 h-10 bg-white rounded cursor-pointer border border-slate-700 hover:border-violet-400"
+                                                        alt="View QR"
+                                                    />
+                                                    <span className="text-xs text-slate-500">Ticket #{t.id}</span>
+                                                    <button
+                                                        onClick={() => copyCode(t.id, t.unique_code)}
+                                                        className="ml-auto text-xs px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
+                                                    >
+                                                        {copiedId === t.id ? 'Copied!' : 'Copy code'}
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : order.status === 'pending' ? (
+                                            <div className="text-xs text-slate-500 pl-4">Awaiting payment confirmation</div>
+                                        ) : null}
                                     </div>
                                 ))}
 
@@ -92,6 +130,14 @@ export default function MyTickets() {
                                             Request Refund
                                         </button>
                                     )}
+                                    {order.status === 'pending' && (
+                                        <Link
+                                            to={`/checkout/${order.id}`}
+                                            className="text-xs px-3 py-1 rounded-full bg-violet-600 hover:bg-violet-500 text-white"
+                                        >
+                                            Complete Payment
+                                        </Link>
+                                    )}
                                     <div className="font-bold text-violet-300 ml-auto">GHS {order.total_amount}</div>
                                 </div>
                             </div>
@@ -99,6 +145,24 @@ export default function MyTickets() {
                     })}
                 </div>
             </main>
+
+            {qrModal && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+                    onClick={() => setQrModal(null)}
+                >
+                    <div className="bg-slate-900 border border-violet-500/30 rounded-2xl p-8 max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
+                        <img src={qrModal.url} className="w-56 h-56 bg-white rounded-lg p-3 mx-auto mb-4" alt="Ticket QR code" />
+                        <p className="text-sm text-slate-400 mb-4">Ticket #{qrModal.ticketId}, present this at the door</p>
+                        <button
+                            onClick={() => setQrModal(null)}
+                            className="px-5 py-2 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

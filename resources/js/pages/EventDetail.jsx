@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar.jsx';
 
 export default function EventDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [toast, setToast] = useState(null);
+    const [discountCode, setDiscountCode] = useState('');
 
     useEffect(() => {
         fetch(`/api/v1/events/${id}`)
@@ -28,9 +31,12 @@ export default function EventDetail() {
         const token = localStorage.getItem('token');
 
         if (!token) {
-            window.location.href = '/login';
+            navigate('/login');
             return;
         }
+
+        const payload = { ticket_type_id: ticketTypeId, quantity: 1 };
+        if (discountCode.trim()) payload.discount_code = discountCode.trim();
 
         const res = await fetch('/api/v1/orders', {
             method: 'POST',
@@ -39,12 +45,12 @@ export default function EventDetail() {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
             },
-            body: JSON.stringify({ ticket_type_id: ticketTypeId, quantity: 1 }),
+            body: JSON.stringify(payload),
         });
 
         if (res.status === 401) {
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            navigate('/login');
             return;
         }
 
@@ -61,14 +67,11 @@ export default function EventDetail() {
     if (loading) return <div className="max-w-4xl mx-auto px-6 py-16 text-slate-400">Loading...</div>;
     if (error) return <div className="max-w-4xl mx-auto px-6 py-16 text-red-400">{error}</div>;
 
+    const eventDate = new Date(event.event_date);
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
-                    <span className="text-lg font-bold text-white">ScyrolynX</span>
-                    <Link to="/" className="text-sm text-violet-400">← Back to Events</Link>
-                </div>
-            </header>
+            <Navbar />
 
             {toast && (
                 <div
@@ -84,11 +87,45 @@ export default function EventDetail() {
             )}
 
             <main className="max-w-4xl mx-auto px-6 py-12">
-                <div className="h-48 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 rounded-2xl flex items-end p-8 mb-8">
-                    <h1 className="text-4xl font-bold text-white">{event.title}</h1>
+                {event.image_url ? (
+                    <div
+                        className="h-48 rounded-2xl flex items-end p-8 mb-8 bg-cover bg-center relative"
+                        style={{ backgroundImage: `url(${event.image_url})` }}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-2xl" />
+                        <h1 className="relative text-4xl font-bold text-white">{event.title}</h1>
+                    </div>
+                ) : (
+                    <div className="h-48 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 rounded-2xl flex items-end p-8 mb-8">
+                        <h1 className="text-4xl font-bold text-white">{event.title}</h1>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-4 text-slate-400 mb-8 flex-wrap">
+                    <span>📍 {event.venue}</span>
+                    <span className="text-slate-700">·</span>
+                    <span>📅 {eventDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="text-slate-700">·</span>
+                    <span>🕐 {eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
                 </div>
 
-                <div className="text-slate-400 mb-8">📍 {event.venue}</div>
+                {event.description && (
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8">
+                        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">About This Event</h2>
+                        <p className="text-slate-300 leading-relaxed">{event.description}</p>
+                    </div>
+                )}
+
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Discount Code (optional)</label>
+                    <input
+                        type="text"
+                        placeholder="e.g. SAVE10"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm uppercase focus:outline-none focus:border-violet-500"
+                    />
+                </div>
 
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
                     <h2 className="text-sm font-semibold text-slate-400 uppercase mb-4">Available Tickets</h2>

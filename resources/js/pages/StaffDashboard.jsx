@@ -76,15 +76,14 @@ export default function StaffDashboard() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     {cards.map((c) => (
-                        <a
-
+                        <Link
                             key={c.href}
-                            href={c.href}
+                            to={c.href}
                             className="block bg-slate-900 border border-slate-800 hover:border-violet-500/50 rounded-xl p-6 transition-all duration-300"
                         >
                             <div className="font-semibold text-white mb-1">{c.title}</div>
                             <div className="text-sm text-slate-400">{c.desc}</div>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             </main>
