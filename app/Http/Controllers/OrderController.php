@@ -87,7 +87,7 @@ class OrderController extends Controller
     {
         $orders = $request->user()
             ->orders()
-            ->with('orderItems.ticketType.event', 'orderItems.tickets')
+            ->with('orderItems.ticketType.event', 'orderItems.tickets', 'refundRequests')
             ->latest()
             ->get();
 
@@ -136,6 +136,33 @@ class OrderController extends Controller
             'message' => 'Payment complete (sandbox mode). Tickets issued.',
             'order' => $order->load('orderItems.ticketType.event', 'orderItems.tickets'),
         ]);
+    }
+
+    /**
+     * Cancel a pending (unpaid) order outright — nothing has been charged
+     * or issued yet, so it's safe to just remove it and give the tickets
+     * back to the pool. A paid order must go through RefundController
+     * instead, since money has actually changed hands by then.
+     */
+    public function cancel(Request $request, Order $order)
+    {
+        if ($order->user_id !== $request->user()->id) {
+            abort(403, 'This order does not belong to you.');
+        }
+
+        if ($order->status !== 'pending') {
+            abort(422, 'Only pending orders can be cancelled. A paid order must be refunded instead.');
+        }
+
+        DB::transaction(function () use ($order) {
+            foreach ($order->orderItems as $item) {
+                $item->ticketType->decrement('quantity_sold', $item->quantity);
+            }
+            $order->orderItems()->delete();
+            $order->delete();
+        });
+
+        return response()->json(['message' => 'Order cancelled.']);
     }
 
     public function qrCode(Request $request, Ticket $ticket)

@@ -26,6 +26,35 @@ class PromoterController extends Controller
         return response()->json(['promoter' => $promoter], 201);
     }
 
+    public function update(Request $request, Promoter $promoter)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'contact_email' => 'nullable|email',
+            'contact_phone' => 'nullable|string|max:50',
+            'commission_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $promoter->update($validated);
+
+        return response()->json(['promoter' => $promoter->fresh()]);
+    }
+
+    /**
+     * Only deletable with no events attached — otherwise those events
+     * would be left pointing at a promoter that no longer exists.
+     */
+    public function destroy(Promoter $promoter)
+    {
+        if ($promoter->events()->count() > 0) {
+            abort(422, 'This promoter still has events attached. Reassign or delete those events first.');
+        }
+
+        $promoter->delete();
+
+        return response()->json(['message' => 'Promoter deleted.']);
+    }
+
     /**
      * Settlement report (spec 4.2): per promoter, tickets sold and the
      * amount owed to the promoter after the company's commission.

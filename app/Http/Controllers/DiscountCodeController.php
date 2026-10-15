@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\DiscountCodeController;
-
 use App\Models\DiscountCode;
 use Illuminate\Http\Request;
 

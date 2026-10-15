@@ -39,7 +39,7 @@ export default function StaffDashboard() {
     }, [token, navigate]);
 
     if (loading) {
-        return <div className="max-w-3xl mx-auto px-6 py-16 text-slate-400">Checking your access...</div>;
+        return <div className="max-w-3xl mx-auto px-6 py-16 text-stone-400">Checking your access...</div>;
     }
 
     const cards = [];
@@ -62,27 +62,27 @@ export default function StaffDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX Staff</span>
-                    <Link to="/" className="text-sm text-slate-400 hover:text-violet-400">View public site</Link>
+                    <Link to="/" className="text-sm text-stone-400 hover:text-gold-400">View public site</Link>
                 </div>
             </header>
 
             <main className="max-w-3xl mx-auto px-6 py-16">
                 <h1 className="text-2xl font-bold mb-2">Staff Dashboard</h1>
-                <p className="text-slate-400 text-sm mb-10">Signed in as: {roles.join(', ')}</p>
+                <p className="text-stone-400 text-sm mb-10">Signed in as: {roles.join(', ')}</p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     {cards.map((c) => (
                         <Link
                             key={c.href}
                             to={c.href}
-                            className="block bg-slate-900 border border-slate-800 hover:border-violet-500/50 rounded-xl p-6 transition-all duration-300"
+                            className="block bg-stone-900 border border-stone-800 hover:border-gold-500/50 rounded-xl p-6 transition-all duration-300"
                         >
                             <div className="font-semibold text-white mb-1">{c.title}</div>
-                            <div className="text-sm text-slate-400">{c.desc}</div>
+                            <div className="text-sm text-stone-400">{c.desc}</div>
                         </Link>
                     ))}
                 </div>

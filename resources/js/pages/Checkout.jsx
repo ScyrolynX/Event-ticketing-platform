@@ -60,14 +60,14 @@ export default function Checkout() {
     }
 
     if (loading) {
-        return <div className="max-w-lg mx-auto px-6 py-16 text-slate-400">Loading order...</div>;
+        return <div className="max-w-lg mx-auto px-6 py-16 text-stone-400">Loading order...</div>;
     }
 
     if (error && !order) {
         return (
             <div className="max-w-lg mx-auto px-6 py-16 text-center">
                 <p className="text-red-400 mb-4">{error}</p>
-                <Link to="/my-tickets" className="text-violet-400 text-sm">← Back to My Tickets</Link>
+                <Link to="/my-tickets" className="text-gold-400 text-sm">← Back to My Tickets</Link>
             </div>
         );
     }
@@ -75,11 +75,11 @@ export default function Checkout() {
     const eventTitle = order.order_items?.[0]?.ticket_type?.event?.title;
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX</span>
-                    <Link to="/my-tickets" className="text-sm text-violet-400">← My Tickets</Link>
+                    <Link to="/my-tickets" className="text-sm text-gold-400">← My Tickets</Link>
                 </div>
             </header>
 
@@ -88,20 +88,20 @@ export default function Checkout() {
                     Sandbox mode — no live Paystack keys are configured, so this button stands in for the real payment redirect.
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-                    <div className="text-sm text-slate-400 mb-1">Order #{order.id}</div>
+                <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 mb-6">
+                    <div className="text-sm text-stone-400 mb-1">Order #{order.id}</div>
                     {eventTitle && <h1 className="text-xl font-bold text-white mb-4">{eventTitle}</h1>}
 
                     {order.order_items.map((item) => (
-                        <div key={item.id} className="flex justify-between text-sm text-slate-300 py-1">
+                        <div key={item.id} className="flex justify-between text-sm text-stone-300 py-1">
                             <span>{item.ticket_type.name} × {item.quantity}</span>
                             <span>GHS {item.unit_price}</span>
                         </div>
                     ))}
 
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-800">
-                        <span className="text-slate-400">Total</span>
-                        <span className="text-xl font-bold text-violet-300">GHS {order.total_amount}</span>
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-stone-800">
+                        <span className="text-stone-400">Total</span>
+                        <span className="text-xl font-bold text-gold-300">GHS {order.total_amount}</span>
                     </div>
                 </div>
 
@@ -112,7 +112,7 @@ export default function Checkout() {
                         <p className="text-green-400 mb-4">Payment complete — your tickets are ready.</p>
                         <Link
                             to="/my-tickets"
-                            className="inline-block px-6 py-3 rounded-full bg-violet-600 hover:bg-violet-500 text-white font-medium"
+                            className="inline-block px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-400 text-stone-950 font-medium"
                         >
                             View My Tickets
                         </Link>
@@ -121,7 +121,7 @@ export default function Checkout() {
                     <button
                         onClick={completePayment}
                         disabled={paying}
-                        className="w-full py-3 rounded-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium"
+                        className="w-full py-3 rounded-full bg-gold-500 hover:bg-gold-400 disabled:opacity-50 text-stone-950 font-medium"
                     >
                         {paying ? 'Processing...' : 'Complete Payment'}
                     </button>

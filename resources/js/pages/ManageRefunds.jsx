@@ -44,11 +44,11 @@ export default function ManageRefunds() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX Staff</span>
-                    <Link to="/staff" className="text-sm text-slate-400 hover:text-violet-400">← Dashboard</Link>
+                    <Link to="/staff" className="text-sm text-stone-400 hover:text-gold-400">← Dashboard</Link>
                 </div>
             </header>
 
@@ -56,21 +56,21 @@ export default function ManageRefunds() {
                 <h1 className="text-2xl font-bold mb-8">Refund Requests</h1>
 
                 {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-                {!error && refunds.length === 0 && <p className="text-slate-400">No refund requests.</p>}
+                {!error && refunds.length === 0 && <p className="text-stone-400">No refund requests.</p>}
 
                 <div className="space-y-4">
                     {refunds.map((refund) => (
-                        <div key={refund.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div key={refund.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
                                     <div className="font-semibold text-white">Order #{refund.order.id} — {refund.order.user.name}</div>
-                                    <div className="text-xs text-slate-500">{refund.order.user.email}</div>
+                                    <div className="text-xs text-stone-500">{refund.order.user.email}</div>
                                 </div>
                                 <span className={`text-xs px-2 py-1 rounded-full border ${statusColor[refund.status]}`}>
                                     {refund.status}
                                 </span>
                             </div>
-                            <div className="text-sm text-slate-300 mb-3">
+                            <div className="text-sm text-stone-300 mb-3">
                                 Total: GHS {refund.order.total_amount}{refund.reason ? ` — Reason: ${refund.reason}` : ''}
                             </div>
                             {refund.status === 'pending' && (

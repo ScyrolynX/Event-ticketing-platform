@@ -61,4 +61,25 @@ class StaffManagementController extends Controller
 
         return response()->json(['user' => $user->load('roles')]);
     }
+
+    /**
+     * Permanently remove a staff account (not just their role — the
+     * account itself). Two guardrails: you can't delete the account
+     * you're currently logged in as, and you can't delete the last
+     * remaining Admin, or nobody would be left who can manage staff.
+     */
+    public function destroy(Request $request, User $user)
+    {
+        if ($request->user()->id === $user->id) {
+            abort(422, "You can't delete your own account while logged in as it.");
+        }
+
+        if ($user->hasRole('Admin') && User::role('Admin')->count() <= 1) {
+            abort(422, 'At least one Admin must remain.');
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'Staff account deleted.']);
+    }
 }

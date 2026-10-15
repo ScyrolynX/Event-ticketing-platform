@@ -32,13 +32,13 @@ export default function Register() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX</span>
-                    <nav className="flex gap-6 text-sm text-slate-400">
-                        <Link to="/" className="hover:text-violet-400">Events</Link>
-                        <Link to="/login" className="hover:text-violet-400">Login</Link>
+                    <nav className="flex gap-6 text-sm text-stone-400">
+                        <Link to="/" className="hover:text-gold-400">Events</Link>
+                        <Link to="/login" className="hover:text-gold-400">Login</Link>
                     </nav>
                 </div>
             </header>
@@ -50,28 +50,28 @@ export default function Register() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Name</label>
-                        <input required value={form.name} onChange={(e) => update('name', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2" />
+                        <label className="block text-sm text-stone-400 mb-1">Name</label>
+                        <input required value={form.name} onChange={(e) => update('name', e.target.value)} className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2" />
                     </div>
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Email</label>
-                        <input type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2" />
+                        <label className="block text-sm text-stone-400 mb-1">Email</label>
+                        <input type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2" />
                     </div>
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Password</label>
-                        <input type="password" required minLength={8} value={form.password} onChange={(e) => update('password', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2" />
+                        <label className="block text-sm text-stone-400 mb-1">Password</label>
+                        <input type="password" required minLength={8} value={form.password} onChange={(e) => update('password', e.target.value)} className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2" />
                     </div>
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Confirm password</label>
-                        <input type="password" required minLength={8} value={form.password_confirmation} onChange={(e) => update('password_confirmation', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2" />
+                        <label className="block text-sm text-stone-400 mb-1">Confirm password</label>
+                        <input type="password" required minLength={8} value={form.password_confirmation} onChange={(e) => update('password_confirmation', e.target.value)} className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2" />
                     </div>
-                    <button type="submit" className="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-2 rounded-md transition-all duration-300 active:scale-95">
+                    <button type="submit" className="w-full bg-gold-500 hover:bg-gold-400 text-stone-950 font-medium py-2 rounded-md transition-all duration-300 active:scale-95">
                         Register
                     </button>
                 </form>
 
-                <p className="text-sm text-slate-400 mt-4">
-                    Already have an account? <Link to="/login" className="text-violet-400">Log in</Link>
+                <p className="text-sm text-stone-400 mt-4">
+                    Already have an account? <Link to="/login" className="text-gold-400">Log in</Link>
                 </p>
             </section>
         </div>

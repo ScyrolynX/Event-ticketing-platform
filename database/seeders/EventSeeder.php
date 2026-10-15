@@ -2,16 +2,34 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\DiscountCode;
 use App\Models\Event;
+use App\Models\Promoter;
 use App\Models\TicketType;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
     public function run(): void
     {
         $organizer = User::first();
+
+        // Two promoters so the settlement-report and promoter-management
+        // screens have something to show on a fresh install, not just an
+        // empty state.
+        $promoterA = Promoter::create([
+            'name' => 'Jollof Collective',
+            'contact_email' => 'bookings@jollofcollective.test',
+            'contact_phone' => '+233 20 000 0001',
+            'commission_rate' => 15,
+        ]);
+        $promoterB = Promoter::create([
+            'name' => 'Osu Nights Promotions',
+            'contact_email' => 'hello@osunights.test',
+            'contact_phone' => '+233 20 000 0002',
+            'commission_rate' => 20,
+        ]);
 
         $event3 = Event::create([
             'organizer_id' => $organizer->id,
@@ -44,6 +62,7 @@ class EventSeeder extends Seeder
 
         $event6 = Event::create([
             'organizer_id' => $organizer->id,
+            'promoter_id' => $promoterB->id,
             'title' => 'Web3 & Blockchain Summit',
             'description' => 'Industry leaders discuss the future of blockchain technology in Africa.',
             'venue' => 'Kempinski Hotel, Accra',
@@ -72,6 +91,7 @@ class EventSeeder extends Seeder
 
         $event9 = Event::create([
             'organizer_id' => $organizer->id,
+            'promoter_id' => $promoterA->id,
             'title' => 'Fashion Week Accra',
             'description' => 'A runway showcase featuring emerging and established West African fashion designers.',
             'venue' => 'Movenpick Ambassador Hotel, Accra',
@@ -89,5 +109,25 @@ class EventSeeder extends Seeder
         ]);
         TicketType::create(['event_id' => $event10->id, 'name' => 'Regular', 'price' => 40.00, 'quantity_available' => 400]);
         TicketType::create(['event_id' => $event10->id, 'name' => 'VIP', 'price' => 150.00, 'quantity_available' => 60]);
+
+        // Two discount codes so checkout's discount-code path has something
+        // real to test against without the box office having to create one
+        // first: one sitewide, one scoped to a single event.
+        DiscountCode::create([
+            'code' => 'WELCOME10',
+            'type' => 'percentage',
+            'value' => 10,
+            'event_id' => null,
+            'valid_from' => now()->subDay(),
+            'valid_until' => now()->addMonths(3),
+        ]);
+        DiscountCode::create([
+            'code' => 'JAZZ20',
+            'type' => 'fixed',
+            'value' => 20,
+            'event_id' => $event7->id,
+            'valid_from' => now()->subDay(),
+            'valid_until' => $event7->event_date,
+        ]);
     }
 }

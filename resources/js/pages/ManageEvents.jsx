@@ -104,11 +104,11 @@ export default function ManageEvents() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX Staff</span>
-                    <Link to="/staff" className="text-sm text-slate-400 hover:text-violet-400">← Dashboard</Link>
+                    <Link to="/staff" className="text-sm text-stone-400 hover:text-gold-400">← Dashboard</Link>
                 </div>
             </header>
 
@@ -118,7 +118,7 @@ export default function ManageEvents() {
                 {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
                 {success && <p className="text-green-400 text-sm mb-4">{success}</p>}
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-10">
+                <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 mb-10">
                     <h2 className="font-semibold text-white mb-4">Create Event</h2>
                     <form onSubmit={handleCreateEvent} className="space-y-3">
                         <input
@@ -126,13 +126,13 @@ export default function ManageEvents() {
                             required
                             value={form.title}
                             onChange={(e) => setForm({ ...form, title: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <select
                             required
                             value={form.category}
                             onChange={(e) => setForm({ ...form, category: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         >
                             <option value="">Select category...</option>
                             <option value="concert">Concert</option>
@@ -143,7 +143,7 @@ export default function ManageEvents() {
                         <select
                             value={form.promoter_id}
                             onChange={(e) => setForm({ ...form, promoter_id: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         >
                             <option value="">No promoter (in-house event)</option>
                             {promoters.map((p) => (
@@ -154,37 +154,37 @@ export default function ManageEvents() {
                             placeholder="Description (optional)"
                             value={form.description}
                             onChange={(e) => setForm({ ...form, description: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <input
                             placeholder="Venue"
                             required
                             value={form.venue}
                             onChange={(e) => setForm({ ...form, venue: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <input
                             type="datetime-local"
                             required
                             value={form.event_date}
                             onChange={(e) => setForm({ ...form, event_date: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Event image (optional)</label>
+                            <label className="block text-xs text-stone-400 mb-1">Event image (optional)</label>
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageChange}
-                                className="w-full text-sm text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-200 file:text-xs"
+                                className="w-full text-sm text-stone-300 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-stone-700 file:text-stone-200 file:text-xs"
                             />
                             {imagePreview && (
-                                <img src={imagePreview} alt="" className="mt-3 h-32 rounded-lg object-cover border border-slate-700" />
+                                <img src={imagePreview} alt="" className="mt-3 h-32 rounded-lg object-cover border border-stone-700" />
                             )}
                         </div>
                         <button
                             type="submit"
-                            className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 active:scale-95"
+                            className="bg-gold-500 hover:bg-gold-400 text-stone-950 text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 active:scale-95"
                         >
                             Create Event
                         </button>
@@ -193,18 +193,18 @@ export default function ManageEvents() {
 
                 <div className="space-y-4">
                     {events.map((event) => (
-                        <div key={event.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div key={event.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5">
                             {event.image_url && (
                                 <img src={event.image_url} alt="" className="w-full h-28 object-cover rounded-lg mb-3" />
                             )}
                             <div className="font-semibold text-white mb-1">{event.title}</div>
-                            <div className="text-xs text-slate-500 mb-3">
+                            <div className="text-xs text-stone-500 mb-3">
                                 {event.venue} — {new Date(event.event_date).toLocaleString()}
                             </div>
 
                             <div className="space-y-2 mb-3">
                                 {event.ticket_types.map((tt) => (
-                                    <div key={tt.id} className="flex justify-between text-sm bg-slate-800/50 rounded px-3 py-2">
+                                    <div key={tt.id} className="flex justify-between text-sm bg-stone-800/50 rounded px-3 py-2">
                                         <span>{tt.name}</span>
                                         <span>GHS {tt.price} — {tt.quantity_available} available</span>
                                     </div>
@@ -217,7 +217,7 @@ export default function ManageEvents() {
                                     required
                                     value={ttForms[event.id]?.name || ''}
                                     onChange={(e) => updateTtForm(event.id, 'name', e.target.value)}
-                                    className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs"
+                                    className="flex-1 bg-stone-800 border border-stone-700 rounded-md px-2 py-1 text-xs"
                                 />
                                 <input
                                     type="number"
@@ -226,7 +226,7 @@ export default function ManageEvents() {
                                     required
                                     value={ttForms[event.id]?.price || ''}
                                     onChange={(e) => updateTtForm(event.id, 'price', e.target.value)}
-                                    className="w-20 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs"
+                                    className="w-20 bg-stone-800 border border-stone-700 rounded-md px-2 py-1 text-xs"
                                 />
                                 <input
                                     type="number"
@@ -234,9 +234,9 @@ export default function ManageEvents() {
                                     required
                                     value={ttForms[event.id]?.quantity_available || ''}
                                     onChange={(e) => updateTtForm(event.id, 'quantity_available', e.target.value)}
-                                    className="w-20 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs"
+                                    className="w-20 bg-stone-800 border border-stone-700 rounded-md px-2 py-1 text-xs"
                                 />
-                                <button type="submit" className="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1 rounded-md">
+                                <button type="submit" className="bg-stone-700 hover:bg-stone-600 text-xs px-3 py-1 rounded-md">
                                     Add
                                 </button>
                             </form>

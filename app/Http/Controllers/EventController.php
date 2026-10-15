@@ -7,19 +7,12 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    public function index()
-    {
-        $events = Event::with('ticketTypes')->get();
-
-        return view('events.index', ['events' => $events]);
-    }
-
-    public function show(Event $event)
-    {
-        $event->load('ticketTypes');
-
-        return view('events.show', ['event' => $event]);
-    }
+    // index()/show() were removed: they rendered Blade views
+    // (events.index / events.show) that no longer exist anywhere in this
+    // project and that no route points to — the app is a React SPA now
+    // (see routes/web.php). Calling either would have thrown a
+    // ViewNotFoundException. apiIndex()/apiShow() below are what the
+    // frontend actually uses.
 
     public function apiIndex(Request $request)
     {

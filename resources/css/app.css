@@ -6,4 +6,52 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* ---- brand: warm architectural copper/brown (structural accents,
+       borders, logos, static gradients) ---- */
+    --color-brand-50: #fbf1ea;
+    --color-brand-100: #f5ddc9;
+    --color-brand-200: #eabd94;
+    --color-brand-300: #dd9a65;
+    --color-brand-400: #cf7f47;
+    --color-brand-500: #c1703f;
+    --color-brand-600: #a35830;
+    --color-brand-700: #82442a;
+    --color-brand-800: #5e3122;
+    --color-brand-900: #3c2219;
+    --color-brand-950: #241410;
+
+    /* ---- gold: neon-gold interactive accent (CTAs, active states,
+       prices, focus rings, hover glows) ---- */
+    --color-gold-50: #fffdf5;
+    --color-gold-100: #fff6d6;
+    --color-gold-200: #ffeca3;
+    --color-gold-300: #ffdd66;
+    --color-gold-400: #ffcf3d;
+    --color-gold-500: #f2ad0a;
+    --color-gold-600: #c98500;
+    --color-gold-700: #9c6a05;
+    --color-gold-800: #7a5308;
+    --color-gold-900: #5c3f0a;
+    --color-gold-950: #352305;
+}
+
+/* reusable "sheen" sweep for brand/gold gradient surfaces — a slow moving
+   highlight band, same technique as the weekly-tracker header stripe */
+@keyframes brand-sheen {
+    from { background-position: 200% 0; }
+    to { background-position: -50% 0; }
+}
+.sheen-surface {
+    position: relative;
+    overflow: hidden;
+}
+.sheen-surface::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 207, 61, 0.22) 50%, transparent 70%);
+    background-size: 220% 100%;
+    animation: brand-sheen 3.5s linear infinite;
+    pointer-events: none;
 }

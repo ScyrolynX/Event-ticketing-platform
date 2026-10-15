@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/orders/{order}', [OrderController::class, 'show']);
         Route::post('/orders/{order}/complete-demo-payment', [OrderController::class, 'completeDemoPayment']);
+        Route::delete('/orders/{order}', [OrderController::class, 'cancel']);
         Route::get('/tickets/{ticket}/qr', [OrderController::class, 'qrCode']);
         Route::post('/orders/{order}/refund', [RefundController::class, 'store']);
     });
@@ -39,17 +40,26 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'role:Admin|Event Manager'])->group(function () {
         Route::get('/manage/events', [EventManagementController::class, 'index']);
         Route::post('/manage/events', [EventManagementController::class, 'store']);
+        Route::patch('/manage/events/{event}', [EventManagementController::class, 'update']);
+        Route::delete('/manage/events/{event}', [EventManagementController::class, 'destroy']);
         Route::post('/manage/events/{event}/ticket-types', [EventManagementController::class, 'storeTicketType']);
+        Route::patch('/manage/events/{event}/ticket-types/{ticketType}', [EventManagementController::class, 'updateTicketType']);
+        Route::delete('/manage/events/{event}/ticket-types/{ticketType}', [EventManagementController::class, 'destroyTicketType']);
         Route::get('/manage/discount-codes', [DiscountCodeController::class, 'index']);
         Route::post('/manage/discount-codes', [DiscountCodeController::class, 'store']);
+        Route::patch('/manage/discount-codes/{discountCode}', [DiscountCodeController::class, 'update']);
+        Route::delete('/manage/discount-codes/{discountCode}', [DiscountCodeController::class, 'destroy']);
         Route::get('/manage/promoters', [PromoterController::class, 'index']);
         Route::post('/manage/promoters', [PromoterController::class, 'store']);
+        Route::patch('/manage/promoters/{promoter}', [PromoterController::class, 'update']);
+        Route::delete('/manage/promoters/{promoter}', [PromoterController::class, 'destroy']);
     });
 
     Route::middleware(['auth:sanctum', 'role:Admin'])->group(function () {
         Route::get('/manage/staff', [StaffManagementController::class, 'index']);
         Route::post('/manage/staff', [StaffManagementController::class, 'store']);
         Route::patch('/manage/staff/{user}', [StaffManagementController::class, 'updateRole']);
+        Route::delete('/manage/staff/{user}', [StaffManagementController::class, 'destroy']);
 
         Route::get('/manage/refunds', [RefundController::class, 'index']);
         Route::post('/manage/refunds/{refundRequest}/approve', [RefundController::class, 'approve']);

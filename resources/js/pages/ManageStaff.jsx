@@ -66,11 +66,11 @@ export default function ManageStaff() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-            <header className="bg-slate-950/80 backdrop-blur border-b border-violet-500/20 sticky top-0 z-10">
+        <div className="min-h-screen bg-stone-950 text-stone-100">
+            <header className="bg-stone-950/80 backdrop-blur border-b border-brand-600/25 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
                     <span className="text-lg font-bold text-white">ScyrolynX Staff</span>
-                    <Link to="/staff" className="text-sm text-slate-400 hover:text-violet-400">← Dashboard</Link>
+                    <Link to="/staff" className="text-sm text-stone-400 hover:text-gold-400">← Dashboard</Link>
                 </div>
             </header>
 
@@ -80,7 +80,7 @@ export default function ManageStaff() {
                 {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
                 {success && <p className="text-green-400 text-sm mb-4">{success}</p>}
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-10">
+                <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 mb-10">
                     <h2 className="font-semibold text-white mb-4">Create Staff Account</h2>
                     <form onSubmit={handleCreate} className="space-y-3">
                         <input
@@ -88,7 +88,7 @@ export default function ManageStaff() {
                             required
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <input
                             type="email"
@@ -96,7 +96,7 @@ export default function ManageStaff() {
                             required
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <input
                             type="password"
@@ -105,13 +105,13 @@ export default function ManageStaff() {
                             minLength={8}
                             value={form.password}
                             onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         />
                         <select
                             required
                             value={form.role}
                             onChange={(e) => setForm({ ...form, role: e.target.value })}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
                         >
                             <option value="">Select a role...</option>
                             {ROLES.map((r) => (
@@ -120,7 +120,7 @@ export default function ManageStaff() {
                         </select>
                         <button
                             type="submit"
-                            className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 active:scale-95"
+                            className="bg-gold-500 hover:bg-gold-400 text-stone-950 text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 active:scale-95"
                         >
                             Create Staff Account
                         </button>
@@ -132,15 +132,15 @@ export default function ManageStaff() {
                     {staff.map((user) => {
                         const currentRole = user.roles[0]?.name || '';
                         return (
-                            <div key={user.id} className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
+                            <div key={user.id} className="flex items-center justify-between bg-stone-900 border border-stone-800 rounded-lg px-4 py-3">
                                 <div>
                                     <div className="text-sm font-medium text-white">{user.name}</div>
-                                    <div className="text-xs text-slate-500">{user.email}</div>
+                                    <div className="text-xs text-stone-500">{user.email}</div>
                                 </div>
                                 <select
                                     value={currentRole}
                                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                    className="bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs"
+                                    className="bg-stone-800 border border-stone-700 rounded-md px-2 py-1 text-xs"
                                 >
                                     {ROLES.map((r) => (
                                         <option key={r} value={r}>{r}</option>
