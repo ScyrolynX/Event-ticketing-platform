@@ -87,7 +87,7 @@ class OrderController extends Controller
     {
         $orders = $request->user()
             ->orders()
-            ->with('orderItems.ticketType.event', 'orderItems.tickets', 'refundRequests')
+            ->with('orderItems.ticketType.event', 'orderItems.tickets')
             ->latest()
             ->get();
 
@@ -119,6 +119,16 @@ class OrderController extends Controller
             abort(403, 'This order does not belong to you.');
         }
 
+        // This endpoint only exists so checkout can be tried end-to-end
+        // without real Paystack keys configured. The moment a real secret
+        // key is set, real payments are possible through the webhook above
+        // — so this "pay for free" shortcut must stop being reachable, or
+        // anyone could skip paying entirely and still get real tickets.
+        // 404 (not 403) so it doesn't even hint the route exists.
+        if (filled(config('services.paystack.secret_key'))) {
+            abort(404);
+        }
+
         if ($order->status === 'paid') {
             return response()->json([
                 'message' => 'This order is already paid.',
@@ -139,26 +149,32 @@ class OrderController extends Controller
     }
 
     /**
-     * Cancel a pending (unpaid) order outright — nothing has been charged
-     * or issued yet, so it's safe to just remove it and give the tickets
-     * back to the pool. A paid order must go through RefundController
-     * instead, since money has actually changed hands by then.
+     * Cancel an order the buyer hasn't paid for yet. Only "pending" orders
+     * qualify — a paid order has real tickets issued and must go through
+     * the refund flow instead, never a plain delete. Cancelling releases
+     * the stock that store() reserved by incrementing quantity_sold at
+     * order-creation time, so the seats go back on sale immediately.
      */
-    public function cancel(Request $request, Order $order)
+    public function destroy(Request $request, Order $order)
     {
         if ($order->user_id !== $request->user()->id) {
             abort(403, 'This order does not belong to you.');
         }
 
         if ($order->status !== 'pending') {
-            abort(422, 'Only pending orders can be cancelled. A paid order must be refunded instead.');
+            return response()->json([
+                'message' => 'Only an unpaid order can be cancelled this way. A paid order can be cancelled by requesting a refund instead.',
+            ], 422);
         }
 
         DB::transaction(function () use ($order) {
-            foreach ($order->orderItems as $item) {
-                $item->ticketType->decrement('quantity_sold', $item->quantity);
-            }
-            $order->orderItems()->delete();
+            // decrement() issues a single atomic "SET quantity_sold = quantity_sold - x"
+            // UPDATE, so it's safe without an explicit row lock here (unlike store(),
+            // which reads remaining stock before deciding whether to allow the order).
+            $order->orderItems->each(function ($orderItem) {
+                $orderItem->ticketType()->decrement('quantity_sold', $orderItem->quantity);
+            });
+
             $order->delete();
         });
 

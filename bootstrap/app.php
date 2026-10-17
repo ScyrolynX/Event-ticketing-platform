@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
+
+        // Baseline abuse protection for every API route (60 req/min per
+        // authenticated user, or per IP while unauthenticated). Without
+        // this, nothing here was rate-limited at all — login, registration,
+        // order creation, everything — which is a real gap for a public
+        // deploy. Login/register also get a much tighter limiter on top of
+        // this (see routes/api.php + AppServiceProvider).
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

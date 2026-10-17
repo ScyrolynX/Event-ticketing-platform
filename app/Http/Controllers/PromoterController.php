@@ -37,19 +37,16 @@ class PromoterController extends Controller
 
         $promoter->update($validated);
 
-        return response()->json(['promoter' => $promoter->fresh()]);
+        return response()->json(['promoter' => $promoter]);
     }
 
     /**
-     * Only deletable with no events attached — otherwise those events
-     * would be left pointing at a promoter that no longer exists.
+     * Delete a promoter. Safe unconditionally — events.promoter_id is
+     * "on delete set null", so any events they were attached to just
+     * become in-house events again rather than breaking.
      */
     public function destroy(Promoter $promoter)
     {
-        if ($promoter->events()->count() > 0) {
-            abort(422, 'This promoter still has events attached. Reassign or delete those events first.');
-        }
-
         $promoter->delete();
 
         return response()->json(['message' => 'Promoter deleted.']);

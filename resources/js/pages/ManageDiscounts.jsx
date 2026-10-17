@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const BLANK_FORM = { code: '', type: 'percentage', value: '', event_id: '' };
+
 export default function ManageDiscounts() {
     const [codes, setCodes] = useState([]);
-    const [form, setForm] = useState({ code: '', type: 'percentage', value: '', event_id: '' });
+    const [form, setForm] = useState(BLANK_FORM);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+
+    // Editing an existing code: which one, and its form state.
+    const [editingId, setEditingId] = useState(null);
+    const [editForm, setEditForm] = useState(BLANK_FORM);
+
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
@@ -47,7 +54,70 @@ export default function ManageDiscounts() {
         }
 
         setSuccess('Discount code created!');
-        setForm({ code: '', type: 'percentage', value: '', event_id: '' });
+        setForm(BLANK_FORM);
+        loadCodes();
+    }
+
+    function startEdit(dc) {
+        setEditingId(dc.id);
+        setEditForm({
+            code: dc.code,
+            type: dc.type,
+            value: dc.value,
+            event_id: dc.event_id || '',
+        });
+        setError(null);
+        setSuccess(null);
+    }
+
+    function cancelEdit() {
+        setEditingId(null);
+    }
+
+    async function handleUpdate(e, id) {
+        e.preventDefault();
+        setError(null);
+        setSuccess(null);
+
+        const payload = { ...editForm };
+        if (!payload.event_id) delete payload.event_id;
+
+        const res = await fetch(`/api/v1/manage/discount-codes/${id}`, {
+            method: 'PATCH',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            setError(data.message || 'Failed to update code.');
+            return;
+        }
+
+        setSuccess('Discount code updated!');
+        setEditingId(null);
+        loadCodes();
+    }
+
+    async function handleDelete(id, code) {
+        if (!window.confirm(`Delete code "${code}"?`)) return;
+        setError(null);
+        setSuccess(null);
+
+        const res = await fetch(`/api/v1/manage/discount-codes/${id}`, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            setError(data.message || 'Failed to delete code.');
+            return;
+        }
+
+        setSuccess('Discount code deleted.');
         loadCodes();
     }
 
@@ -102,7 +172,7 @@ export default function ManageDiscounts() {
                         />
                         <button
                             type="submit"
-                            className="bg-gold-500 hover:bg-gold-400 text-stone-950 text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 active:scale-95"
+                            className="bg-gold-500 hover:bg-gold-400 text-stone-950 text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:scale-105 active:scale-95"
                         >
                             Create Code
                         </button>
@@ -111,16 +181,89 @@ export default function ManageDiscounts() {
 
                 <h2 className="font-semibold text-white mb-4">Existing Codes</h2>
                 <div className="space-y-3">
-                    {codes.map((dc) => (
-                        <div key={dc.id} className="bg-stone-900 border border-stone-800 rounded-lg px-4 py-3 flex justify-between items-center">
-                            <div>
-                                <div className="text-sm font-mono font-semibold text-gold-300">{dc.code}</div>
-                                <div className="text-xs text-stone-500">
-                                    {dc.type === 'percentage' ? `${dc.value}% off` : `GHS ${dc.value} off`} — {dc.event_id ? `Event #${dc.event_id}` : 'Sitewide'}
+                    {codes.map((dc) => {
+                        const isEditing = editingId === dc.id;
+
+                        if (isEditing) {
+                            return (
+                                <form
+                                    key={dc.id}
+                                    onSubmit={(e) => handleUpdate(e, dc.id)}
+                                    className="bg-stone-900 border border-gold-500/40 rounded-lg px-4 py-3 space-y-2"
+                                >
+                                    <input
+                                        required
+                                        value={editForm.code}
+                                        onChange={(e) => setEditForm({ ...editForm, code: e.target.value })}
+                                        className="w-full bg-stone-800 border border-gold-500/40 rounded-md px-3 py-2 text-sm uppercase"
+                                    />
+                                    <select
+                                        value={editForm.type}
+                                        onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                                        className="w-full bg-stone-800 border border-gold-500/40 rounded-md px-3 py-2 text-sm"
+                                    >
+                                        <option value="percentage">Percentage off</option>
+                                        <option value="fixed">Fixed amount off</option>
+                                    </select>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={editForm.value}
+                                        onChange={(e) => setEditForm({ ...editForm, value: e.target.value })}
+                                        className="w-full bg-stone-800 border border-gold-500/40 rounded-md px-3 py-2 text-sm"
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Event ID (leave blank for sitewide)"
+                                        value={editForm.event_id}
+                                        onChange={(e) => setEditForm({ ...editForm, event_id: e.target.value })}
+                                        className="w-full bg-stone-800 border border-gold-500/40 rounded-md px-3 py-2 text-sm"
+                                    />
+                                    <div className="flex gap-2 pt-1">
+                                        <button
+                                            type="submit"
+                                            className="bg-gold-500 hover:bg-gold-400 text-stone-950 text-xs font-medium px-4 py-1.5 rounded-full transition-all duration-200"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={cancelEdit}
+                                            className="bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium px-4 py-1.5 rounded-full transition-all duration-200"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            );
+                        }
+
+                        return (
+                            <div key={dc.id} className="bg-stone-900 border border-stone-800 rounded-lg px-4 py-3 flex justify-between items-center">
+                                <div>
+                                    <div className="text-sm font-mono font-semibold text-gold-300">{dc.code}</div>
+                                    <div className="text-xs text-stone-500">
+                                        {dc.type === 'percentage' ? `${dc.value}% off` : `GHS ${dc.value} off`} — {dc.event_id ? `Event #${dc.event_id}` : 'Sitewide'}
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 shrink-0">
+                                    <button
+                                        onClick={() => startEdit(dc)}
+                                        className="text-xs text-gold-400 hover:text-gold-300 font-medium transition-colors duration-200"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(dc.id, dc.code)}
+                                        className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors duration-200"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </main>
         </div>

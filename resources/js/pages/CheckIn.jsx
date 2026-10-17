@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function CheckIn() {
     const [code, setCode] = useState('');
     const [result, setResult] = useState(null);
+    const [scanning, setScanning] = useState(false);
+    const [scanError, setScanError] = useState(null);
+    const scannerRef = useRef(null);
+    const hasScannedRef = useRef(false);
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
@@ -12,9 +16,57 @@ export default function CheckIn() {
         return null;
     }
 
-    async function handleSubmit(e) {
-        e.preventDefault();
+    // Runs the actual camera/scan lifecycle. Mounting and tearing down the
+    // scanner lives here (not in the button handlers) so the "stop the
+    // camera" cleanup always runs — on a successful scan, on Cancel, and if
+    // the staff member navigates away mid-scan — instead of being
+    // duplicated in three places.
+    useEffect(() => {
+        if (!scanning) return;
 
+        hasScannedRef.current = false;
+        let cancelled = false;
+
+        (async () => {
+            const { Html5Qrcode } = await import('html5-qrcode');
+            if (cancelled) return;
+
+            const scanner = new Html5Qrcode('qr-reader');
+            scannerRef.current = scanner;
+
+            try {
+                await scanner.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 240, height: 240 } },
+                    (decodedText) => {
+                        // The callback can fire a few more times while the
+                        // camera is winding down — only act on the first hit.
+                        if (hasScannedRef.current) return;
+                        hasScannedRef.current = true;
+                        setScanning(false);
+                        submitCode(decodedText);
+                    },
+                    () => {} // per-frame "no QR in view yet" noise — ignored
+                );
+            } catch (err) {
+                if (!cancelled) {
+                    setScanError("Could not access the camera. Check that you've allowed camera access for this site, or enter the code manually below.");
+                    setScanning(false);
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+            if (scannerRef.current) {
+                const s = scannerRef.current;
+                scannerRef.current = null;
+                s.stop().then(() => s.clear()).catch(() => {});
+            }
+        };
+    }, [scanning]);
+
+    async function submitCode(rawCode) {
         const res = await fetch('/api/v1/check-in', {
             method: 'POST',
             headers: {
@@ -22,7 +74,7 @@ export default function CheckIn() {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
             },
-            body: JSON.stringify({ unique_code: code.trim() }),
+            body: JSON.stringify({ unique_code: rawCode.trim() }),
         });
 
         const data = await res.json();
@@ -34,8 +86,22 @@ export default function CheckIn() {
         } else {
             setResult({ type: 'warn', icon: '⚠️', title: data.message || 'Rejected', detail: null });
         }
+    }
 
+    async function handleManualSubmit(e) {
+        e.preventDefault();
+        await submitCode(code);
         setCode('');
+    }
+
+    function startScanning() {
+        setResult(null);
+        setScanError(null);
+        setScanning(true);
+    }
+
+    function cancelScanning() {
+        setScanning(false);
     }
 
     const resultClasses = {
@@ -60,7 +126,7 @@ export default function CheckIn() {
 
             <main className="max-w-md mx-auto px-6 py-16 text-center">
                 <h1 className="text-2xl font-bold mb-2">Ticket Check-In</h1>
-                <p className="text-stone-400 text-sm mb-10">Paste or scan a ticket's code below to admit it.</p>
+                <p className="text-stone-400 text-sm mb-8">Scan a ticket's QR code with your camera, or type its code in by hand.</p>
 
                 {result && (
                     <div className={`rounded-2xl p-8 mb-6 border ${resultClasses[result.type]}`}>
@@ -70,22 +136,60 @@ export default function CheckIn() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <textarea
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        rows={3}
-                        placeholder="Ticket code..."
-                        required
-                        className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2 text-stone-100 text-xs focus:outline-none focus:border-gold-500"
-                    />
+                {scanError && !scanning && (
+                    <p className="text-amber-300 text-xs mb-4 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3">{scanError}</p>
+                )}
+
+                {/* Always mounted (just hidden) so the scanner library has a
+                    real element to attach to the instant it's told to start —
+                    no race between "camera turned on" and "div exists". */}
+                <div
+                    id="qr-reader"
+                    className={scanning ? 'w-full rounded-2xl overflow-hidden border border-gold-500/30 mb-6' : 'hidden'}
+                />
+
+                {scanning ? (
                     <button
-                        type="submit"
-                        className="w-full bg-gold-500 hover:bg-gold-400 text-stone-950 font-medium py-3 rounded-full transition-all duration-300 active:scale-95"
+                        onClick={cancelScanning}
+                        className="w-full bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium py-3 rounded-full transition-all duration-300 mb-8"
                     >
-                        Check In
+                        Cancel Scan
                     </button>
-                </form>
+                ) : (
+                    <button
+                        onClick={startScanning}
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-gold-600 hover:from-brand-500 hover:to-gold-500 text-white font-semibold py-3.5 rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-gold-500/20 mb-8"
+                    >
+                        📷 Scan with Camera
+                    </button>
+                )}
+
+                {!scanning && (
+                    <>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-px bg-stone-800 flex-1" />
+                            <span className="text-xs text-stone-500 uppercase tracking-wide">or enter manually</span>
+                            <div className="h-px bg-stone-800 flex-1" />
+                        </div>
+
+                        <form onSubmit={handleManualSubmit} className="space-y-4">
+                            <textarea
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                rows={3}
+                                placeholder="Ticket code..."
+                                required
+                                className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2 text-stone-100 text-xs focus:outline-none focus:border-gold-500"
+                            />
+                            <button
+                                type="submit"
+                                className="w-full bg-gold-500 hover:bg-gold-400 text-stone-950 font-medium py-3 rounded-full transition-all duration-300 active:scale-95"
+                            >
+                                Check In
+                            </button>
+                        </form>
+                    </>
+                )}
             </main>
         </div>
     );

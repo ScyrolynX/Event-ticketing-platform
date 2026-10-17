@@ -6,7 +6,7 @@ export default function EventsList() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filters, setFilters] = useState({ category: '', date_from: '', date_to: '', max_price: '' });
+    const [filters, setFilters] = useState({ category: '', date_from: '', max_price: '' });
 
     useEffect(() => {
         loadEvents();
@@ -16,7 +16,6 @@ export default function EventsList() {
         const params = new URLSearchParams();
         if (filters.category) params.set('category', filters.category);
         if (filters.date_from) params.set('date_from', filters.date_from);
-        if (filters.date_to) params.set('date_to', filters.date_to);
         if (filters.max_price) params.set('max_price', filters.max_price);
 
         fetch('/api/v1/events?' + params.toString())
@@ -61,7 +60,7 @@ export default function EventsList() {
                     </span>
                 </div>
 
-                <div className="bg-stone-900 border border-stone-800 rounded-xl p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-stone-900 border border-stone-800 rounded-xl p-4 mb-8 grid grid-cols-1 md:grid-cols-3 gap-3">
                     <select
                         value={filters.category}
                         onChange={(e) => setFilters({ ...filters, category: e.target.value })}
@@ -73,18 +72,15 @@ export default function EventsList() {
                         <option value="sports">Sports</option>
                         <option value="other">Other</option>
                     </select>
-                    <input
-                        type="date"
-                        value={filters.date_from}
-                        onChange={(e) => setFilters({ ...filters, date_from: e.target.value })}
-                        className="bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
-                    />
-                    <input
-                        type="date"
-                        value={filters.date_to}
-                        onChange={(e) => setFilters({ ...filters, date_to: e.target.value })}
-                        className="bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm"
-                    />
+                    <label className="flex items-center gap-2 bg-stone-800 border border-stone-700 rounded-md px-3 py-2 text-sm text-stone-400">
+                        <span className="shrink-0">On or after</span>
+                        <input
+                            type="date"
+                            value={filters.date_from}
+                            onChange={(e) => setFilters({ ...filters, date_from: e.target.value })}
+                            className="bg-transparent text-stone-100 flex-1 min-w-0 focus:outline-none [color-scheme:dark]"
+                        />
+                    </label>
                     <input
                         type="number"
                         placeholder="Max price (GHS)"

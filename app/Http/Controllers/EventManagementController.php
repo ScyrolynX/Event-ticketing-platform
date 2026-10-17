@@ -9,13 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class EventManagementController extends Controller
 {
-    public function index()
-    {
-        $events = Event::with('ticketTypes')->latest()->get();
-
-        return response()->json(['events' => $events]);
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -46,10 +39,34 @@ class EventManagementController extends Controller
         return response()->json(['event' => $event], 201);
     }
 
+    public function storeTicketType(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'quantity_available' => 'required|integer|min:1',
+        ]);
+
+        $ticketType = $event->ticketTypes()->create([
+            'name' => $validated['name'],
+            'price' => $validated['price'],
+            'quantity_available' => $validated['quantity_available'],
+            'quantity_sold' => 0,
+        ]);
+
+        return response()->json(['ticket_type' => $ticketType], 201);
+    }
+
+    public function index()
+    {
+        $events = Event::with('ticketTypes')->latest()->get();
+
+        return response()->json(['events' => $events]);
+    }
+
     /**
-     * Edit an existing event. Sent as POST with _method=PATCH so file
-     * uploads work (PHP does not populate $_FILES on real PUT/PATCH
-     * requests) — Laravel's method-spoofing makes this transparent.
+     * Edit an existing event. A new image replaces (and deletes) the old
+     * one; leaving the image field out keeps whatever is already there.
      */
     public function update(Request $request, Event $event)
     {
@@ -69,71 +86,69 @@ class EventManagementController extends Controller
             }
             $validated['image_path'] = $request->file('image')->store('events', 'public');
         }
-
         unset($validated['image']);
+
         $event->update($validated);
 
-        return response()->json(['event' => $event->fresh()]);
+        return response()->json(['event' => $event->fresh('ticketTypes')]);
     }
 
     /**
-     * Only deletable while zero tickets have sold — an event with paid
-     * customers holding real tickets can't just vanish. They should be
-     * refunded (see RefundController) before the event itself is removed.
+     * Delete an event — but never one that has already sold tickets.
+     * ticket_types and order_items cascade-delete at the DB level, which
+     * would silently wipe real purchase history, so that path is blocked
+     * entirely rather than made "safe" after the fact.
      */
     public function destroy(Event $event)
     {
-        $totalSold = $event->ticketTypes()->sum('quantity_sold');
+        $alreadySold = $event->ticketTypes()->where('quantity_sold', '>', 0)->exists();
 
-        if ($totalSold > 0) {
-            abort(422, 'This event has tickets already sold. Refund those orders before deleting the event.');
+        if ($alreadySold) {
+            return response()->json([
+                'message' => 'This event already has ticket sales, so it can\'t be deleted. Edit it instead, or stop selling by setting ticket quantities to 0.',
+            ], 422);
         }
 
         if ($event->image_path) {
             Storage::disk('public')->delete($event->image_path);
         }
 
-        $event->ticketTypes()->delete();
         $event->delete();
 
         return response()->json(['message' => 'Event deleted.']);
     }
 
-    public function storeTicketType(Request $request, Event $event)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'quantity_available' => 'required|integer|min:1',
-        ]);
-
-        $ticketType = $event->ticketTypes()->create([
-            'name' => $validated['name'],
-            'price' => $validated['price'],
-            'quantity_available' => $validated['quantity_available'],
-            'quantity_sold' => 0,
-        ]);
-
-        return response()->json(['ticket_type' => $ticketType], 201);
-    }
-
     public function updateTicketType(Request $request, Event $event, TicketType $ticketType)
     {
+        if ($ticketType->event_id !== $event->id) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'quantity_available' => 'required|integer|min:' . $ticketType->quantity_sold,
+            'quantity_available' => 'required|integer|min:'.$ticketType->quantity_sold,
         ]);
 
         $ticketType->update($validated);
 
-        return response()->json(['ticket_type' => $ticketType->fresh()]);
+        return response()->json(['ticket_type' => $ticketType]);
     }
 
+    /**
+     * Delete a ticket type — but never one that has already sold tickets,
+     * for the same reason an event with sales can't be deleted.
+     */
     public function destroyTicketType(Event $event, TicketType $ticketType)
     {
+        if ($ticketType->event_id !== $event->id) {
+            abort(404);
+        }
+
         if ($ticketType->quantity_sold > 0) {
-            abort(422, 'This ticket type has already sold tickets and cannot be deleted.');
+            return response()->json([
+                'message' => 'This ticket type already has sales, so it can\'t be deleted.',
+            ], 422);
         }
 
         $ticketType->delete();
